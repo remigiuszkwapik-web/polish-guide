@@ -1,6 +1,6 @@
 // Krok Service Worker: App offline verfügbar machen.
 // Bei jeder Änderung an index.html o. Ä. VERSION hochzählen, damit Geräte die neue Fassung laden.
-const VERSION = "krok-v2";
+const VERSION = "krok-v3";
 const SHELL = [
   "./",
   "./index.html",

@@ -198,6 +198,17 @@ textarea{width:100%;min-height:120px;font-family:var(--font-mono);font-size:12px
 .ladder .n{font-family:var(--font-mono);width:20px;color:var(--muted)}
 .brake{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;background:var(--amber-soft);color:var(--ink);font-size:14px}
 .brake b{color:var(--amber)}
+.stagebtn{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;border-radius:8px}
+.stagebtn:focus-visible{outline:2px solid var(--cobalt);outline-offset:3px}
+.info{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--cobalt);color:var(--cobalt);font-family:var(--font-display);font-style:italic;font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ask{display:flex;align-items:baseline;gap:10px}
+.ask b{font-family:var(--font-display);font-size:17px}
+.exs{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+.ex:first-child{border-top:0}
+.exde{color:var(--muted);font-size:14px}
+.expl{font-family:var(--font-display);font-size:16px;font-weight:600}
+@media (max-width:360px){.ex{grid-template-columns:1fr;gap:2px}}
 .syncnote{font-size:12px;color:var(--faint);text-align:center}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
@@ -228,6 +239,40 @@ const STAGES = [
   {n:9,name:"Zukunft",desc:"będę robić / zrobię"},
   {n:10,name:"Genitiv II",desc:"Plural und Zahlen"}
 ];
+
+/* Was ist das? Kurzerklärung je Grammatikstufe, mit deutschem und polnischem Beispiel */
+const STAGE_INFO = {
+  1:{what:"Die Gegenwart. Das Verb ändert seine Endung je nach Person, wie im Deutschen. Das Pronomen (ja, ty …) lässt man im Polnischen meist weg, weil die Endung schon zeigt, wer gemeint ist.",
+     ask:"Wer tut es?",
+     ex:[["Ich koche. Du kochst.","Gotuję. Gotujesz."],["Wir essen Brot.","Jemy chleb."]]},
+  2:{what:"Der 4. Fall. Er markiert das direkte Objekt, also das, worauf sich die Handlung richtet. Im Deutschen ändert sich vor allem der Artikel (der → den), im Polnischen die Endung des Wortes.",
+     ask:"Wen oder was?",
+     ex:[["Ich trinke den Kaffee.","Piję kawę."],["Ich kaufe einen Fisch.","Kupuję rybę."]]},
+  3:{what:"Der 2. Fall. Im Polnischen viel häufiger als im Deutschen: Er steht nach Verneinung, wo das Deutsche den Akkusativ behält, und nach Mengenangaben.",
+     ask:"Wessen? Wovon?",
+     ex:[["Ich habe keinen Kaffee.","Nie mam kawy."],["ein Glas Wasser","szklanka wody"],["die Küche der Mutter","kuchnia mamy"]]},
+  4:{what:"Gibt es im Deutschen nicht als Grammatik. Fast jedes polnische Verb hat zwei Formen: imperfektiv für Vorgang, Gewohnheit oder Wiederholung, perfektiv für ein abgeschlossenes Ergebnis. Im Deutschen drückt man das mit Wörtern wie „gerade“, „immer“ oder „fertig“ aus.",
+     ask:"Läuft es noch, oder ist es fertig?",
+     ex:[["Ich schreibe gerade einen Brief.","Piszę list."],["Ich schreibe den Brief fertig.","Napiszę list."],["Jeden Morgen trinke ich Kaffee.","Codziennie rano piję kawę."]]},
+  5:{what:"Im Polnischen gibt es nur eine Vergangenheitsform statt Perfekt und Präteritum. Die Endung zeigt dabei das Geschlecht der Person: Ein Mann sagt -łem, eine Frau -łam.",
+     ask:"Was war?",
+     ex:[["Ich habe gekocht. (Mann)","Gotowałem."],["Ich habe gekocht. (Frau)","Gotowałam."],["Sie hat gelesen.","Ona czytała."]]},
+  6:{what:"Gibt es im Deutschen nicht. Er steht für das Mittel oder die Begleitung, nach z (mit) und nach być, wenn man sagt, was jemand ist.",
+     ask:"Womit? Mit wem? Als was?",
+     ex:[["Ich bin Designer.","Jestem projektantem."],["Kaffee mit Milch","kawa z mlekiem"],["Ich fahre mit der Straßenbahn.","Jadę tramwajem."]]},
+  7:{what:"Gibt es im Deutschen nicht. Er steht nur nach bestimmten Präpositionen wie w (in), na (auf), o (über) und przy (bei). Im Deutschen steht dort meist der Dativ oder Akkusativ.",
+     ask:"Wo? Worüber?",
+     ex:[["Wir sind in der Küche.","Jesteśmy w kuchni."],["Wir reden über die Arbeit.","Rozmawiamy o pracy."],["Ich wohne in Hamburg.","Mieszkam w Hamburgu."]]},
+  8:{what:"Der 3. Fall, wie im Deutschen. Er markiert, wem etwas gegeben, gesagt oder gezeigt wird.",
+     ask:"Wem?",
+     ex:[["Ich gebe der Mutter das Buch.","Daję mamie książkę."],["Ich helfe dem Bruder.","Pomagam bratu."]]},
+  9:{what:"Es gibt zwei Wege, und der Verbaspekt entscheidet: imperfektiv mit będę + Infinitiv für einen Vorgang, perfektiv einfach in der Präsensform für ein Ergebnis.",
+     ask:"Was wird sein?",
+     ex:[["Ich werde (eine Weile) kochen.","Będę gotować."],["Ich werde (die Suppe) fertig kochen.","Ugotuję zupę."]]},
+  10:{what:"Nach Zahlen ändert sich die Form: Bei 2, 3 und 4 steht der Nominativ Plural, ab 5 der Genitiv Plural. Das gilt auch nach Mengenwörtern wie dużo (viel) und kilka (einige).",
+     ask:"Wie viele?",
+     ex:[["zwei Äpfel","dwa jabłka"],["fünf Äpfel","pięć jabłek"],["viele Tomaten","dużo pomidorów"]]}
+};
 
 const RULES = {
   praes_e:{name:"Präsens: -ę / -esz",stage:1,
@@ -690,9 +735,9 @@ function renderGram(){
     return {s,rs,tot,ok};
   });
   return `<div><div class="label">Grammatik-Leiter</div><h1>Deine Regeln</h1></div>
-  <p class="muted">Startpunkt aus dem Einstiegstest: Stufe ${Math.min(curStage,10)}, ${esc(STAGES[Math.min(curStage,10)-1].name)}. Tippe eine Regel an für die Erklärung.</p>
+  <p class="muted">Startpunkt aus dem Einstiegstest: Stufe ${Math.min(curStage,10)}, ${esc(STAGES[Math.min(curStage,10)-1].name)}. Tippe auf eine Stufe für eine Erklärung mit deutschem und polnischem Beispiel, auf eine Regel für ihr Muster.</p>
   ${ladder.map(({s,rs,tot,ok})=>`<section class="panel">
-    <div class="spread"><div class="row"><span class="mono muted">${pad(s.n)}</span><h3>${esc(s.name)}</h3></div>${s.n<=S.passed?'<span class="chip">aus dem Test</span>':""}</div>
+    <div class="spread"><button class="stagebtn" data-act="stage" data-s="${s.n}" aria-label="${esc(s.name)}: Was ist das?"><span class="mono muted">${pad(s.n)}</span><h3>${esc(s.name)}</h3><span class="info" aria-hidden="true">i</span></button>${s.n<=S.passed?'<span class="chip">aus dem Test</span>':""}</div>
     ${rs.length?`<div class="list">${rs.map(([k,r])=>{const v=S.ruleStats[k]||[0,0];const p=v[1]?Math.round(v[0]/v[1]*100):null;const sure=v[1]>=20&&p>=85;
       return `<div class="rule"><button data-act="why" data-rule="${k}"><div class="spread"><b>${esc(r.name)}</b><span class="small mono ${sure?"sure":"muted"}">${p===null?"–":p+" %"}</span></div></button>
       <div class="bar"><span style="width:${p||0}%;background:${p===null?"transparent":p>=85?"var(--good)":p>=60?"var(--amber)":"var(--bad)"}"></span></div>
@@ -844,6 +889,7 @@ function rateButtons(c){
   </div>`;
 }
 function renderSheet(){
+  if(OVERLAY&&OVERLAY.type==="stage")return renderStageSheet(OVERLAY.stage);
   if(!OVERLAY||OVERLAY.type!=="why")return "";
   const r=RULES[OVERLAY.rule];
   const c=SESS&&curCard();
@@ -854,6 +900,18 @@ function renderSheet(){
     <div><div class="label" style="margin-bottom:4px">Warum</div><p>${esc(r.why)}</p></div>
     ${note}
     <div><div class="label" style="margin-bottom:4px">Muster</div><div class="pattern">${esc(r.pattern)}</div></div>
+    <button class="btn ghost" data-act="stage" data-s="${r.stage}" style="align-self:flex-start;padding-left:0">Was ist ${esc(STAGES[r.stage-1].name==="Verbaspekt"?"der Verbaspekt":STAGES[r.stage-1].name)}? Mit Beispielen →</button>
+    <button class="btn secondary" data-act="closesheet">Schließen</button>
+  </div></div>`;
+}
+function renderStageSheet(n){
+  const s=STAGES[n-1], i=STAGE_INFO[n];
+  return `<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="stT" data-stop="1">
+    <span class="grab"></span>
+    <div class="label">Grammatik · Stufe ${n}</div><h2 id="stT">${esc(s.name)}</h2>
+    <p>${esc(i.what)}</p>
+    <div class="ask"><span class="label">Frage</span><b>${esc(i.ask)}</b></div>
+    <div class="exs">${i.ex.map(([de,pl])=>`<div class="ex"><span class="exde">${esc(de)}</span><span class="expl">${esc(pl)}</span></div>`).join("")}</div>
     <button class="btn secondary" data-act="closesheet">Schließen</button>
   </div></div>`;
 }
@@ -1039,6 +1097,7 @@ document.addEventListener("click",e=>{
     case "pick":{const c=curCard();SESS.picked=el.dataset.o;SESS.phase="shown";const ok=SESS.picked===c.ref.a;SESS.suggest=ok?3:1;ruleStat(c.rule,ok);render();break;}
     case "rate":rate(+el.dataset.g);break;
     case "why":OVERLAY={type:"why",rule:el.dataset.rule};if(SESS)render();else{$layer.innerHTML=renderSheet();}break;
+    case "stage":OVERLAY={type:"stage",stage:+el.dataset.s};if(SESS)render();else{$layer.innerHTML=renderSheet();}break;
     case "lvl":LVLDETAIL=+el.dataset.l;render();window.scrollTo(0,0);break;
     case "lvlback":LVLDETAIL=null;render();break;
     case "closelu":$layer.innerHTML="";break;
@@ -1106,8 +1165,9 @@ initStore();
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});
   // Neue Version: einmal neu laden, sobald der neue Service Worker übernimmt
-  let reloaded=false;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloaded||SESS)return;reloaded=true;location.reload();});
+  // Beim allerersten Besuch nicht neu laden, nur bei einem echten Update
+  const hadController=!!navigator.serviceWorker.controller;let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!hadController||reloaded||SESS)return;reloaded=true;location.reload();});
 }
 </script>
 </body>
