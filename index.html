@@ -196,6 +196,8 @@ textarea{width:100%;min-height:120px;font-family:var(--font-mono);font-size:12px
 .ladder div.done{color:var(--muted)}
 .ladder div.start{border-color:var(--cobalt);box-shadow:0 0 0 2px var(--cobalt-soft);font-weight:600}
 .ladder .n{font-family:var(--font-mono);width:20px;color:var(--muted)}
+.brake{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;background:var(--amber-soft);color:var(--ink);font-size:14px}
+.brake b{color:var(--amber)}
 .syncnote{font-size:12px;color:var(--faint);text-align:center}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
@@ -449,12 +451,12 @@ function fmtIv(ms){
    ============================================================ */
 const KEY="krok-state-v1";
 let S=null, storageOk=true, persisted=false;
-function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,cards:{},log:[],days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
+function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,backlogLimit:30,cards:{},log:[],days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
 function lsGet(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null;}catch(e){storageOk=false;return null;}}
 function lsSet(){try{localStorage.setItem(KEY,JSON.stringify(S));storageOk=true;}catch(e){storageOk=false;}}
 function save(){S.savedAt=Date.now();lsSet();}
 async function initStore(){
-  S=lsGet()||fresh();
+  S=Object.assign(fresh(),lsGet()||{});
   render();
   // Browser bitten, den Lernstand nicht automatisch zu löschen
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persisted()||await navigator.storage.persist();render();}}catch(e){}
@@ -509,7 +511,8 @@ function buildQueue(){
   const unlocked=LEVELS.filter(levelUnlocked);
   const due=CARDS.filter(c=>unlocked.includes(c.lvl)&&st(c.id)&&st(c.id).state&&st(c.id).due<=now+60*MIN)
     .sort((a,b)=>st(a.id).due-st(b.id).due);
-  const left=Math.max(0,S.newPerDay-day.nw);
+  const nb=newBudget(due.filter(c=>st(c.id).state===2&&st(c.id).due<=now).length);
+  const left=Math.max(0,nb.allowed-day.nw);
   const introducedToday=new Set(Object.keys(S.cards).filter(id=>S.cards[id].intro===dayKey()).map(id=>CARD[id]&&CARD[id].sib));
   const fresh=[];
   for(const c of CARDS){
@@ -524,6 +527,24 @@ function buildQueue(){
   const goalNow=day.rev+day.nw+queue.length;
   if(goalNow>day.goal)day.goal=goalNow;
   return queue;
+}
+
+/**
+ * Bremse bei Rückstand: Sind viele Wiederholungen offen, kommen weniger neue Karten.
+ * Bis zur Hälfte des Limits volle Menge, danach linear weniger, ab dem Limit keine.
+ * Zählt auch die heute schon eingeführten neuen Karten mit, damit das Budget fair bleibt.
+ */
+function newBudget(dueReviews){
+  const lim=S.backlogLimit||0, full=S.newPerDay;
+  if(!lim||dueReviews<=lim/2)return {allowed:full,full,braked:false,due:dueReviews,lim};
+  if(dueReviews>=lim)return {allowed:0,full,braked:true,due:dueReviews,lim};
+  const f=(lim-dueReviews)/(lim/2);
+  return {allowed:Math.round(full*f),full,braked:true,due:dueReviews,lim};
+}
+function brakeInfo(){
+  const now=Date.now(), unlocked=LEVELS.filter(levelUnlocked);
+  const n=CARDS.filter(c=>unlocked.includes(c.lvl)&&st(c.id)&&st(c.id).state===2&&st(c.id).due<=now).length;
+  return newBudget(n);
 }
 
 /* ============================================================
@@ -589,6 +610,7 @@ function renderToday(){
   const C=2*Math.PI*48;
   const sk=streak();
   const dueN=q.filter(id=>st(id)&&st(id).state).length;
+  const bk=brakeInfo();
   const newN=q.length-dueN;
   const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||LEVELS[LEVELS.length-1];
   const ls=levelState(active);
@@ -607,6 +629,7 @@ function renderToday(){
       <p class="muted">${day.done&&!q.length?"Morgen warten neue Wiederholungen.":`${dueN} Wiederholungen · ${newN} neue Karten`}</p>
     </div>
   </section>
+  ${bk.braked?`<div class="brake" role="note"><b>${bk.allowed?"Weniger neue Karten":"Neue Karten pausiert"}</b><span>${bk.due} Wiederholungen sind offen. ${bk.allowed?`Heute kommen ${bk.allowed} statt ${bk.full} neue Karten dazu.`:"Arbeite erst den Rückstand ab."} Unter ${Math.floor(bk.lim/2)} offenen gibt es wieder alle ${bk.full}.</span></div>`:""}
   ${q.length?`<button class="btn" data-act="start">${day.rev+day.nw?"Session fortsetzen":"Session starten"}</button>`:`<button class="btn secondary" disabled>Keine Karten fällig</button>`}
   <div class="stats3">
     <div class="stat"><b class="mono">${sk.n}</b><span class="small muted">Tage Streak</span></div>
@@ -714,6 +737,8 @@ function renderSettings(){
   <h1>Einstellungen</h1>
   <section class="panel stack"><h3>Neue Karten pro Tag</h3><p class="small muted">Standard wie in Anki: 20.</p>
     <div class="opts">${[10,15,20,30].map(n=>`<button data-act="npd" data-n="${n}" aria-pressed="${S.newPerDay===n}">${n}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Neue Karten bei Rückstand bremsen</h3><p class="small muted">Sind viele Wiederholungen offen, kommen weniger neue Karten dazu. Ab dem Wert hier pausieren sie ganz, ab der Hälfte davon gibt es wieder die volle Menge.</p>
+    <div class="opts">${[[0,"Aus"],[20,"20"],[30,"30"],[50,"50"]].map(([n,l])=>`<button data-act="blim" data-n="${n}" aria-pressed="${(S.backlogLimit||0)===n}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Backup</h3><p class="small muted">Exportiere deinen Lernstand als JSON-Datei oder lies ein Backup wieder ein.</p>
     <button class="btn secondary" data-act="export">Backup als Datei speichern</button>
     <label class="btn secondary filebtn" for="impfile">Backup-Datei einlesen<input id="impfile" type="file" accept="application/json,.json"></label>
@@ -1018,6 +1043,7 @@ document.addEventListener("click",e=>{
     case "lvlback":LVLDETAIL=null;render();break;
     case "closelu":$layer.innerHTML="";break;
     case "npd":S.newPerDay=+el.dataset.n;save();render();break;
+    case "blim":S.backlogLimit=+el.dataset.n;save();render();break;
     case "export":doExport();break;
     case "import":doImport();break;
     case "retest":S.onboarded=false;ONB={step:1};render();break;
