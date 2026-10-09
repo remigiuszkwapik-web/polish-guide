@@ -222,206 +222,19 @@ textarea{width:100%;min-height:120px;font-family:var(--font-mono);font-size:12px
 </div>
 <div id="layer"></div>
 
+<script src="content/grammar.js"></script>
+<script src="content/kueche.js"></script>
 <script>
 "use strict";
 /* ============================================================
-   INHALTE: Kapitel Küche, Level 1–3
+   INHALTE: liegen in content/*.js (KROK)
    ============================================================ */
-const STAGES = [
-  {n:1,name:"Präsens",desc:"Konjugation im Präsens"},
-  {n:2,name:"Akkusativ",desc:"Das direkte Objekt"},
-  {n:3,name:"Genitiv I",desc:"Nach Verneinung und Mengen"},
-  {n:4,name:"Verbaspekt",desc:"Imperfektiv oder perfektiv"},
-  {n:5,name:"Vergangenheit",desc:"Mit Geschlecht: robiłem / robiłam"},
-  {n:6,name:"Instrumental",desc:"jestem projektantem, z mlekiem"},
-  {n:7,name:"Lokativ",desc:"w kuchni, o pracy"},
-  {n:8,name:"Dativ",desc:"Wem? Komu?"},
-  {n:9,name:"Zukunft",desc:"będę robić / zrobię"},
-  {n:10,name:"Genitiv II",desc:"Plural und Zahlen"}
-];
-
-/* Was ist das? Kurzerklärung je Grammatikstufe, mit deutschem und polnischem Beispiel */
-const STAGE_INFO = {
-  1:{what:"Die Gegenwart. Das Verb ändert seine Endung je nach Person, wie im Deutschen. Das Pronomen (ja, ty …) lässt man im Polnischen meist weg, weil die Endung schon zeigt, wer gemeint ist.",
-     ask:"Wer tut es?",
-     ex:[["Ich koche. Du kochst.","Gotuję. Gotujesz."],["Wir essen Brot.","Jemy chleb."]]},
-  2:{what:"Der 4. Fall. Er markiert das direkte Objekt, also das, worauf sich die Handlung richtet. Im Deutschen ändert sich vor allem der Artikel (der → den), im Polnischen die Endung des Wortes.",
-     ask:"Wen oder was?",
-     ex:[["Ich trinke den Kaffee.","Piję kawę."],["Ich kaufe einen Fisch.","Kupuję rybę."]]},
-  3:{what:"Der 2. Fall. Im Polnischen viel häufiger als im Deutschen: Er steht nach Verneinung, wo das Deutsche den Akkusativ behält, und nach Mengenangaben.",
-     ask:"Wessen? Wovon?",
-     ex:[["Ich habe keinen Kaffee.","Nie mam kawy."],["ein Glas Wasser","szklanka wody"],["die Küche der Mutter","kuchnia mamy"]]},
-  4:{what:"Gibt es im Deutschen nicht als Grammatik. Fast jedes polnische Verb hat zwei Formen: imperfektiv für Vorgang, Gewohnheit oder Wiederholung, perfektiv für ein abgeschlossenes Ergebnis. Im Deutschen drückt man das mit Wörtern wie „gerade“, „immer“ oder „fertig“ aus.",
-     ask:"Läuft es noch, oder ist es fertig?",
-     ex:[["Ich schreibe gerade einen Brief.","Piszę list."],["Ich schreibe den Brief fertig.","Napiszę list."],["Jeden Morgen trinke ich Kaffee.","Codziennie rano piję kawę."]]},
-  5:{what:"Im Polnischen gibt es nur eine Vergangenheitsform statt Perfekt und Präteritum. Die Endung zeigt dabei das Geschlecht der Person: Ein Mann sagt -łem, eine Frau -łam.",
-     ask:"Was war?",
-     ex:[["Ich habe gekocht. (Mann)","Gotowałem."],["Ich habe gekocht. (Frau)","Gotowałam."],["Sie hat gelesen.","Ona czytała."]]},
-  6:{what:"Gibt es im Deutschen nicht. Er steht für das Mittel oder die Begleitung, nach z (mit) und nach być, wenn man sagt, was jemand ist.",
-     ask:"Womit? Mit wem? Als was?",
-     ex:[["Ich bin Designer.","Jestem projektantem."],["Kaffee mit Milch","kawa z mlekiem"],["Ich fahre mit der Straßenbahn.","Jadę tramwajem."]]},
-  7:{what:"Gibt es im Deutschen nicht. Er steht nur nach bestimmten Präpositionen wie w (in), na (auf), o (über) und przy (bei). Im Deutschen steht dort meist der Dativ oder Akkusativ.",
-     ask:"Wo? Worüber?",
-     ex:[["Wir sind in der Küche.","Jesteśmy w kuchni."],["Wir reden über die Arbeit.","Rozmawiamy o pracy."],["Ich wohne in Hamburg.","Mieszkam w Hamburgu."]]},
-  8:{what:"Der 3. Fall, wie im Deutschen. Er markiert, wem etwas gegeben, gesagt oder gezeigt wird.",
-     ask:"Wem?",
-     ex:[["Ich gebe der Mutter das Buch.","Daję mamie książkę."],["Ich helfe dem Bruder.","Pomagam bratu."]]},
-  9:{what:"Es gibt zwei Wege, und der Verbaspekt entscheidet: imperfektiv mit będę + Infinitiv für einen Vorgang, perfektiv einfach in der Präsensform für ein Ergebnis.",
-     ask:"Was wird sein?",
-     ex:[["Ich werde (eine Weile) kochen.","Będę gotować."],["Ich werde (die Suppe) fertig kochen.","Ugotuję zupę."]]},
-  10:{what:"Nach Zahlen ändert sich die Form: Bei 2, 3 und 4 steht der Nominativ Plural, ab 5 der Genitiv Plural. Das gilt auch nach Mengenwörtern wie dużo (viel) und kilka (einige).",
-     ask:"Wie viele?",
-     ex:[["zwei Äpfel","dwa jabłka"],["fünf Äpfel","pięć jabłek"],["viele Tomaten","dużo pomidorów"]]}
-};
-
-const RULES = {
-  praes_e:{name:"Präsens: -ę / -esz",stage:1,
-    why:"Verben wie pić, gotować und myć bilden das Präsens mit -ę (ich) und -esz (du), er/sie mit -e. Bei Verben auf -ować wird -ow- zu -uj-, bei -awać wird -awa- zu -aj-.",
-    pattern:"pić → piję, pijesz · gotować → gotuję, gotujesz · kupować → kupuję · dodawać → dodaję"},
-  praes_i:{name:"Präsens: -ę / -isz",stage:1,
-    why:"Verben auf -ić und -yć bilden ich mit -ę und du mit -isz bzw. -ysz. Das i fällt bei ich oft weg: robić → robię.",
-    pattern:"robić → robię, robisz · kroić → kroję, kroisz · smażyć → smażę, smażysz"},
-  praes_am:{name:"Präsens: -am / -asz",stage:1,
-    why:"Viele Verben auf -ać hängen -am (ich) und -asz (du) direkt an den Stamm.",
-    pattern:"mieszać → mieszam, mieszasz · nakrywać → nakrywam · mieć → mam"},
-  jesc:{name:"jeść ist unregelmäßig",stage:1,
-    why:"jeść folgt keiner der Gruppen. Die sechs Formen lernt man am besten als Reihe.",
-    pattern:"ja jem · ty jesz · on je · my jemy · wy jecie · oni jedzą"},
-  acc_f:{name:"Akkusativ feminin: -a → -ę",stage:2,
-    why:"Das direkte Objekt eines Verbs wie pić, jeść oder kupować steht im Akkusativ. Feminine Nomen auf -a enden dann auf -ę.",
-    pattern:"kawa → kawę · woda → wodę · zupa → zupę · ryba → rybę"},
-  acc_mn:{name:"Akkusativ = Grundform (unbelebt m, n)",stage:2,
-    why:"Bei unbelebten maskulinen und bei neutralen Nomen ist der Akkusativ gleich der Grundform. Nur belebte maskuline Nomen, also Personen und Tiere, bekommen -a.",
-    pattern:"chleb → chleb · ser → ser · mleko → mleko · masło → masło"},
-  acc_fcons:{name:"Akkusativ feminin auf Konsonant",stage:2,
-    why:"Feminine Nomen, die auf einen Konsonanten enden, bleiben im Akkusativ unverändert.",
-    pattern:"sól → sól · noc → noc · rzecz → rzecz"},
-  gen_neg:{name:"Genitiv nach Verneinung",stage:3,
-    why:"Verlangt ein Verb sonst den Akkusativ, steht das Objekt nach nie im Genitiv. Feminin -a → -y bzw. -i nach k, g, l und weichen Lauten; maskulin meist -a, manchmal -u; neutral -o → -a.",
-    pattern:"Mam kawę. → Nie mam kawy. · Jem chleb. → Nie jem chleba. · Kupuję cukier. → Nie kupuję cukru."},
-  gen_qty:{name:"Genitiv nach Mengen",stage:3,
-    why:"Nach Mengenangaben wie szklanka, kawałek, łyżka, kilogram oder trochę steht das Nomen im Genitiv. Die Endungen sind dieselben wie nach der Verneinung.",
-    pattern:"szklanka wody · kawałek sera · łyżka mąki · trochę soli · kilogram cebuli"},
-  aspect:{name:"Verbaspekt",stage:4,
-    why:"Imperfektive Verben (gotować) beschreiben einen Vorgang, etwas Wiederholtes oder eine Gewohnheit. Perfektive Verben (ugotować) betonen das abgeschlossene Ergebnis. Im Präsens gebildet bedeuten perfektive Verben Zukunft: ugotuję heißt „ich werde fertig kochen“.",
-    pattern:"Codziennie gotuję. (Gewohnheit) · Jutro ugotuję zupę. (Ergebnis, Zukunft)"}
-};
-
-const NOUNS = [
-  // Level 1
-  {id:"kawa",pl:"kawa",de:"Kaffee",g:"f",lvl:1},
-  {id:"herbata",pl:"herbata",de:"Tee",g:"f",lvl:1},
-  {id:"woda",pl:"woda",de:"Wasser",g:"f",lvl:1},
-  {id:"chleb",pl:"chleb",de:"Brot",g:"m",lvl:1},
-  {id:"mleko",pl:"mleko",de:"Milch",g:"n",lvl:1},
-  {id:"ser",pl:"ser",de:"Käse",g:"m",lvl:1},
-  {id:"jajko",pl:"jajko",de:"Ei",g:"n",lvl:1},
-  {id:"zupa",pl:"zupa",de:"Suppe",g:"f",lvl:1},
-  // Level 2
-  {id:"jablko",pl:"jabłko",de:"Apfel",g:"n",lvl:2},
-  {id:"maslo",pl:"masło",de:"Butter",g:"n",lvl:2},
-  {id:"mieso",pl:"mięso",de:"Fleisch",g:"n",lvl:2},
-  {id:"ryba",pl:"ryba",de:"Fisch",g:"f",lvl:2},
-  {id:"sol",pl:"sól",de:"Salz",g:"f",lvl:2},
-  {id:"cukier",pl:"cukier",de:"Zucker",g:"m",lvl:2},
-  {id:"garnek",pl:"garnek",de:"Topf",g:"m",lvl:2},
-  {id:"noz",pl:"nóż",de:"Messer",g:"m",lvl:2},
-  // Level 3
-  {id:"talerz",pl:"talerz",de:"Teller",g:"m",lvl:3},
-  {id:"lyzka",pl:"łyżka",de:"Löffel",g:"f",lvl:3},
-  {id:"widelec",pl:"widelec",de:"Gabel",g:"m",lvl:3},
-  {id:"szklanka",pl:"szklanka",de:"Glas (Trinkglas)",g:"f",lvl:3},
-  {id:"maka",pl:"mąka",de:"Mehl",g:"f",lvl:3},
-  {id:"pomidor",pl:"pomidor",de:"Tomate",g:"m",lvl:3},
-  {id:"cebula",pl:"cebula",de:"Zwiebel",g:"f",lvl:3},
-  {id:"kuchnia",pl:"kuchnia",de:"Küche",g:"f",lvl:3}
-];
-
-const VERBS = [
-  {id:"pic",impf:"pić",pf:"wypić",de:"trinken",ja:"piję",ty:"pijesz",rule:"praes_e",lvl:1},
-  {id:"jesc",impf:"jeść",pf:"zjeść",de:"essen",ja:"jem",ty:"jesz",rule:"jesc",lvl:1},
-  {id:"robic",impf:"robić",pf:"zrobić",de:"machen",ja:"robię",ty:"robisz",rule:"praes_i",lvl:1},
-  {id:"gotowac",impf:"gotować",pf:"ugotować",de:"kochen",ja:"gotuję",ty:"gotujesz",rule:"praes_e",lvl:1},
-  {id:"kupowac",impf:"kupować",pf:"kupić",de:"kaufen",ja:"kupuję",ty:"kupujesz",rule:"praes_e",lvl:2},
-  {id:"kroic",impf:"kroić",pf:"pokroić",de:"schneiden",ja:"kroję",ty:"kroisz",rule:"praes_i",lvl:2},
-  {id:"myc",impf:"myć",pf:"umyć",de:"waschen, spülen",ja:"myję",ty:"myjesz",rule:"praes_e",lvl:2},
-  {id:"dodawac",impf:"dodawać",pf:"dodać",de:"hinzufügen",ja:"dodaję",ty:"dodajesz",rule:"praes_e",lvl:2},
-  {id:"smazyc",impf:"smażyć",pf:"usmażyć",de:"braten",ja:"smażę",ty:"smażysz",rule:"praes_i",lvl:3},
-  {id:"piec",impf:"piec",pf:"upiec",de:"backen",ja:"piekę",ty:"pieczesz",rule:"praes_e",lvl:3},
-  {id:"mieszac",impf:"mieszać",pf:"wymieszać",de:"umrühren",ja:"mieszam",ty:"mieszasz",rule:"praes_am",lvl:3},
-  {id:"nakrywac",impf:"nakrywać",pf:"nakryć",de:"(den Tisch) decken",ja:"nakrywam",ty:"nakrywasz",rule:"praes_am",lvl:3}
-];
-
-// Grammatikaufgaben. base = Ausgangsform, a = Lösung, mc = Auswahl statt Tippen
-const DRILLS = [
-  // Level 1: Präsens + Akkusativ
-  {id:"d01",lvl:1,q:"Rano piję ___.",base:"kawa",a:"kawę",de:"Morgens trinke ich Kaffee.",rule:"acc_f"},
-  {id:"d02",lvl:1,q:"Ja ___ zupę.",base:"gotować · ja",a:"gotuję",de:"Ich koche Suppe.",rule:"praes_e"},
-  {id:"d03",lvl:1,q:"Codziennie jem ___.",base:"chleb",a:"chleb",de:"Jeden Tag esse ich Brot.",rule:"acc_mn"},
-  {id:"d04",lvl:1,q:"Ty ___ obiad?",base:"robić · ty",a:"robisz",de:"Machst du das Mittagessen?",rule:"praes_i"},
-  {id:"d05",lvl:1,q:"Ona pije ___.",base:"woda",a:"wodę",de:"Sie trinkt Wasser.",rule:"acc_f"},
-  {id:"d06",lvl:1,q:"My ___ ser.",base:"jeść · my",a:"jemy",de:"Wir essen Käse.",rule:"jesc"},
-  {id:"d07",lvl:1,q:"Czy ___ herbatę?",base:"pić · ty",a:"pijesz",de:"Trinkst du Tee?",rule:"praes_e"},
-  {id:"d08",lvl:1,q:"On je ___ na śniadanie.",base:"jajko",a:"jajko",de:"Er isst ein Ei zum Frühstück.",rule:"acc_mn"},
-  {id:"d09",lvl:1,q:"Oni ___ kolację.",base:"jeść · oni",a:"jedzą",de:"Sie essen Abendbrot.",rule:"jesc"},
-  {id:"d10",lvl:1,q:"Gotujesz ___?",base:"zupa",a:"zupę",de:"Kochst du Suppe?",rule:"acc_f"},
-  // Level 2: + Genitiv nach Verneinung
-  {id:"d11",lvl:2,q:"Kupuję ___ na obiad.",base:"ryba",a:"rybę",de:"Ich kaufe Fisch fürs Mittagessen.",rule:"acc_f"},
-  {id:"d12",lvl:2,q:"Ty ___ jabłko.",base:"kroić · ty",a:"kroisz",de:"Du schneidest den Apfel.",rule:"praes_i"},
-  {id:"d13",lvl:2,q:"Ja ___ garnek.",base:"myć · ja",a:"myję",de:"Ich spüle den Topf.",rule:"praes_e"},
-  {id:"d14",lvl:2,q:"Dodaję ___ do zupy.",base:"sól",a:"sól",de:"Ich gebe Salz in die Suppe.",rule:"acc_fcons"},
-  {id:"d15",lvl:2,q:"Ona ___ mięso.",base:"kupować · ona",a:"kupuje",de:"Sie kauft Fleisch.",rule:"praes_e"},
-  {id:"d16",lvl:2,q:"Czy ___ cukier do herbaty?",base:"dodawać · ty",a:"dodajesz",de:"Gibst du Zucker in den Tee?",rule:"praes_e"},
-  {id:"d17",lvl:2,q:"Mam ___ do chleba.",base:"masło",a:"masło",de:"Ich habe Butter fürs Brot.",rule:"acc_mn"},
-  {id:"d18",lvl:2,q:"Nie mam ___.",base:"kawa",a:"kawy",de:"Ich habe keinen Kaffee.",rule:"gen_neg"},
-  {id:"d19",lvl:2,q:"Nie piję ___.",base:"mleko",a:"mleka",de:"Ich trinke keine Milch.",rule:"gen_neg"},
-  {id:"d20",lvl:2,q:"Nie jem ___.",base:"mięso",a:"mięsa",de:"Ich esse kein Fleisch.",rule:"gen_neg"},
-  {id:"d21",lvl:2,q:"Nie mamy ___.",base:"chleb",a:"chleba",de:"Wir haben kein Brot.",rule:"gen_neg"},
-  {id:"d22",lvl:2,q:"Nie kupuję ___.",base:"cukier",a:"cukru",de:"Ich kaufe keinen Zucker.",rule:"gen_neg",note:"cukier gehört zu den maskulinen Nomen mit -u im Genitiv, wie viele Stoffe: cukru, ryżu."},
-  // Level 3: + Genitiv nach Mengen, Verbaspekt
-  {id:"d23",lvl:3,q:"Szklanka ___, proszę.",base:"woda",a:"wody",de:"Ein Glas Wasser, bitte.",rule:"gen_qty"},
-  {id:"d24",lvl:3,q:"Poproszę kawałek ___.",base:"ser",a:"sera",de:"Ich hätte gern ein Stück Käse.",rule:"gen_qty"},
-  {id:"d25",lvl:3,q:"Dodaj łyżkę ___.",base:"mąka",a:"mąki",de:"Gib einen Löffel Mehl dazu.",rule:"gen_qty",note:"Nach k steht -i statt -y: mąka → mąki."},
-  {id:"d26",lvl:3,q:"Dodaj trochę ___.",base:"sól",a:"soli",de:"Gib etwas Salz dazu.",rule:"gen_qty"},
-  {id:"d27",lvl:3,q:"Kupuję kilogram ___.",base:"cebula",a:"cebuli",de:"Ich kaufe ein Kilo Zwiebeln.",rule:"gen_qty",note:"Nach l steht -i: cebula → cebuli."},
-  {id:"d28",lvl:3,q:"Nie mam ___.",base:"widelec",a:"widelca",de:"Ich habe keine Gabel.",rule:"gen_neg",note:"Das e in widelec fällt weg: widelec → widelca (bewegliches e)."},
-  {id:"d29",lvl:3,q:"Ja ___ rybę.",base:"smażyć · ja",a:"smażę",de:"Ich brate den Fisch.",rule:"praes_i"},
-  {id:"d30",lvl:3,q:"Ty ___ zupę?",base:"mieszać · ty",a:"mieszasz",de:"Rührst du die Suppe um?",rule:"praes_am"},
-  {id:"d31",lvl:3,q:"Dziś ja ___ do stołu.",base:"nakrywać · ja",a:"nakrywam",de:"Heute decke ich den Tisch.",rule:"praes_am"},
-  {id:"d32",lvl:3,q:"Codziennie rano ___ kawę.",mc:["piję","wypiję"],a:"piję",de:"Jeden Morgen trinke ich Kaffee.",rule:"aspect",note:"Gewohnheit → imperfektiv."},
-  {id:"d33",lvl:3,q:"Jutro ___ ciasto i przyniosę je do pracy.",mc:["piekę","upiekę"],a:"upiekę",de:"Morgen backe ich einen Kuchen und bringe ihn zur Arbeit mit.",rule:"aspect",note:"Fertiges Ergebnis in der Zukunft → perfektiv."},
-  {id:"d34",lvl:3,q:"Poczekaj, właśnie ___ zupę.",mc:["gotuję","ugotuję"],a:"gotuję",de:"Warte, ich koche gerade Suppe.",rule:"aspect",note:"Vorgang, der gerade läuft → imperfektiv."},
-  {id:"d35",lvl:3,q:"Za chwilę ___ jabłko i dam ci kawałek.",mc:["kroję","pokroję"],a:"pokroję",de:"Gleich schneide ich den Apfel auf und gebe dir ein Stück.",rule:"aspect",note:"Einmalige, abgeschlossene Handlung → perfektiv."}
-];
-
-// Einstiegstest: 3 Fragen pro Stufe, Stufen 1–7
-const TEST = [
-  {s:1,q:"Ja ___ kawę.",h:"pić",o:["piję","pije","pijesz","pijemy"]},
-  {s:1,q:"Ty ___ dużo.",h:"robić",o:["robisz","robi","robię","robimy"]},
-  {s:1,q:"Oni ___ obiad.",h:"jeść",o:["jedzą","jemy","je","jecie"]},
-  {s:2,q:"Lubię ___.",h:"herbata",o:["herbatę","herbata","herbaty","herbacie"]},
-  {s:2,q:"Kupuję ___.",h:"ser",o:["ser","sera","serem","serze"]},
-  {s:2,q:"Widzę ___.",h:"mama",o:["mamę","mama","mamy","mamą"]},
-  {s:3,q:"Nie mam ___.",h:"czas",o:["czasu","czas","czasem","czasie"]},
-  {s:3,q:"Nie lubię ___.",h:"kawa",o:["kawy","kawę","kawa","kawą"]},
-  {s:3,q:"Szklanka ___.",h:"mleko",o:["mleka","mleko","mlekiem","mleku"]},
-  {s:4,q:"Codziennie ___ gazetę.",h:"Jeden Tag lese ich die Zeitung.",o:["czytam","przeczytam"]},
-  {s:4,q:"Kiedy ___ list, wyślę go.",h:"Wenn ich den Brief fertig geschrieben habe, schicke ich ihn ab.",o:["napiszę","piszę"]},
-  {s:4,q:"Właśnie ___ obiad, nie mogę rozmawiać.",h:"Ich mache gerade Mittagessen.",o:["robię","zrobię"]},
-  {s:5,q:"Wczoraj ___ w domu.",h:"być · ich (männlich)",o:["byłem","byłam","był","była"]},
-  {s:5,q:"Ona ___ książkę.",h:"czytać · Vergangenheit",o:["czytała","czytał","czytałam","czytali"]},
-  {s:5,q:"My ___ do kina.",h:"pójść · wir (gemischt)",o:["poszliśmy","poszli","poszłyśmy","poszedłem"]},
-  {s:6,q:"Jestem ___.",h:"projektant",o:["projektantem","projektanta","projektant","projektancie"]},
-  {s:6,q:"Kawa z ___.",h:"mleko",o:["mlekiem","mleka","mleko","mleku"]},
-  {s:6,q:"Jadę ___.",h:"tramwaj",o:["tramwajem","tramwaj","tramwaju","tramwaja"]},
-  {s:7,q:"Mieszkam w ___.",h:"Hamburg",o:["Hamburgu","Hamburg","Hamburgiem","Hamburga"]},
-  {s:7,q:"Rozmawiamy o ___.",h:"praca",o:["pracy","pracę","praca","pracą"]},
-  {s:7,q:"Jesteśmy w ___.",h:"kuchnia",o:["kuchni","kuchnię","kuchnia","kuchnią"]}
-];
-
-const CHAPTERS = ["Küche & Essen","Zuhause","Einkaufen","Unterwegs & Reisen","Arbeit","Familie & Leute","Körper & Gesundheit","Freizeit & Sport","Zeit & Wetter","Gefühle & Meinungen"];
-const LEVELS = [1,2,3];
-const LEVEL_NOTE = {1:"Präsens · Akkusativ",2:"+ Genitiv nach Verneinung",3:"+ Mengen · Verbaspekt"};
+const STAGES=KROK.stages, STAGE_INFO=KROK.stageInfo, RULES=KROK.rules, TEST=KROK.test, CHAPTERS=KROK.chapterNames;
+const CH=KROK.chapters[0];
+const NOUNS=CH.nouns, VERBS=CH.verbs, DRILLS=CH.drills;
+const LEVELS=Object.keys(CH.levels).map(Number).sort((a,b)=>a-b);
+const LEVEL_NOTE=Object.fromEntries(LEVELS.map(L=>[L,CH.levels[L].note]));
+const LEVEL_STAGE=Object.fromEntries(LEVELS.map(L=>[L,CH.levels[L].stage]));
 
 /* ---------- Karten aus den Inhalten erzeugen ---------- */
 const CARDS = []; const CARD = {};
@@ -536,7 +349,8 @@ function streak(){
 
 /* ---------- Karten-Status ---------- */
 const st=id=>S.cards[id];
-function levelUnlocked(L){if(L===1)return true;if(S.passed>=L)return true;return levelState(L-1).reached;}
+/** Level frei: erstes Level, oder Vorgänger erreicht, oder Einstiegstest deckt die Voraussetzungen ab */
+function levelUnlocked(L){const i=LEVELS.indexOf(L);if(i<=0)return true;if(S.passed>=LEVEL_STAGE[L]-1)return true;return levelState(LEVELS[i-1]).reached;}
 function levelState(L){
   const cs=CARDS.filter(c=>c.lvl===L);
   let seen=0,grad=0,mature=0;const b={nw:0,learn:0,young:0,mature:0};
@@ -554,7 +368,7 @@ let SESS=null;
 function buildQueue(){
   const now=Date.now(), day=today();
   const unlocked=LEVELS.filter(levelUnlocked);
-  const due=CARDS.filter(c=>unlocked.includes(c.lvl)&&st(c.id)&&st(c.id).state&&st(c.id).due<=now+60*MIN)
+  const due=CARDS.filter(c=>st(c.id)&&st(c.id).state&&st(c.id).due<=now+60*MIN)
     .sort((a,b)=>st(a.id).due-st(b.id).due);
   const nb=newBudget(due.filter(c=>st(c.id).state===2&&st(c.id).due<=now).length);
   const left=Math.max(0,nb.allowed-day.nw);
@@ -588,7 +402,7 @@ function newBudget(dueReviews){
 }
 function brakeInfo(){
   const now=Date.now(), unlocked=LEVELS.filter(levelUnlocked);
-  const n=CARDS.filter(c=>unlocked.includes(c.lvl)&&st(c.id)&&st(c.id).state===2&&st(c.id).due<=now).length;
+  const n=CARDS.filter(c=>st(c.id)&&st(c.id).state===2&&st(c.id).due<=now).length;
   return newBudget(n);
 }
 
@@ -682,7 +496,7 @@ function renderToday(){
     <div class="stat"><b class="mono">${verbsPair}/${VERBS.length}</b><span class="small muted">Aspektpaare</span></div>
   </div>
   <section class="panel stack">
-    <div class="spread"><div><div class="label">Aktives Kapitel</div><h3>Küche & Essen · Level ${active}</h3></div><span class="chip">${ls.grad}/${ls.total}</span></div>
+    <div class="spread"><div><div class="label">Aktives Kapitel</div><h3>${esc(CH.name)} · Level ${active}</h3></div><span class="chip">${ls.grad}/${ls.total}</span></div>
     ${matBar(ls.b,ls.total)}
     <p class="small muted">${LEVEL_NOTE[active]}. Ein Level ist erreicht, wenn jede Karte einmal sitzt. Reif wird sie ab 21 Tagen Intervall.</p>
   </section>
@@ -707,8 +521,8 @@ function renderChap(){
         <p class="small muted">${LEVEL_NOTE[L]}</p>
         ${matBar(s.b,s.total)}
       </div></button></div>`;}).join("");
-  const later=[4,5,6,7,8,9,10].map(L=>`<div class="lvl lockcard"><div class="node">${L}</div><div class="panel"><b>Level ${L}</b><p class="small muted">Inhalte folgen</p></div></div>`).join("");
-  return `<div><div class="label">Kapitel 1 von 10</div><h1>Küche & Essen</h1></div>
+  const later=[1,2,3,4,5,6,7,8,9,10].filter(L=>!LEVELS.includes(L)).map(L=>`<div class="lvl lockcard"><div class="node">${L}</div><div class="panel"><b>Level ${L}</b><p class="small muted">Inhalte folgen</p></div></div>`).join("");
+  return `<div><div class="label">Kapitel 1 von 10</div><h1>${esc(CH.name)}</h1></div>
   <p class="muted">${wordsReached()} von 10 Leveln erreicht. Die Farbe zeigt, wie fest die Karten sitzen.</p>
   <div class="path">${lv}${later}</div>
   <section class="stack"><h2>Alle Kapitel</h2><div class="chapters">${CHAPTERS.map((c,i)=>`<div class="ch ${i===0?"cur":"lockcard"}"><div class="label">Kapitel ${i+1}</div><b>${esc(c)}</b><p class="small muted">${i===0?wordsReached()+" / 10":"folgt"}</p></div>`).join("")}</div></section>`;
@@ -720,7 +534,7 @@ function renderLevelDetail(L){
   const worst=ids=>{const order=["nw","learn","young","mature"];return ids.map(i=>matOf(st(i))).sort((a,b)=>order.indexOf(a)-order.indexOf(b))[0];};
   const drills=cs.filter(c=>c.kind.startsWith("drill"));
   return `<button class="btn ghost" data-act="lvlback" style="padding-left:0">← Kapitel</button>
-  <div><div class="label">Küche & Essen</div><h1>Level ${L}</h1><p class="muted">${LEVEL_NOTE[L]}${levelUnlocked(L)?"":" · noch gesperrt"}</p></div>
+  <div><div class="label">${esc(CH.name)}</div><h1>Level ${L}</h1><p class="muted">${LEVEL_NOTE[L]}${levelUnlocked(L)?"":" · noch gesperrt"}</p></div>
   <section class="panel"><h3>Wörter</h3><div class="list">${words.map(w=>{const m=worst(w.ids);return `<div class="it"><div><div class="wpl">${esc(w.pl)}</div><div class="small muted">${esc(w.de)} ${w.g?"· "+gtag(w.g):""}</div></div><span class="chip"><i class="dot mat-${m==="nw"?"new":m}" style="border:1px solid var(--line)"></i>${MAT_LABEL[m]}</span></div>`;}).join("")}</div></section>
   <section class="panel"><h3>Grammatikaufgaben</h3><div class="list">${drills.map(c=>{const m=matOf(st(c.id));return `<div class="it"><div class="small" style="font-family:var(--font-display);font-size:15px">${esc(c.ref.q.replace("___","…"))}</div><span class="chip">${MAT_LABEL[m]}</span></div>`;}).join("")}</div></section>`;
 }
@@ -952,22 +766,22 @@ function rate(g){
 function renderSummary(){
   const ok=SESS.results.ok.length,bad=SESS.results.bad.length;
   const errs=Object.entries(SESS.ruleErr).sort((a,b)=>b[1]-a[1]);
-  const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||3;
+  const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||LEVELS.at(-1);
   const ls=levelState(active);
   const sk=streak();
   return `<main>
   <div class="stack" style="align-items:flex-start"><div class="label">Session beendet</div><h1>Gut gemacht</h1><p class="muted">${sk.n} ${sk.n===1?"Tag":"Tage"} in Folge.</p></div>
   <div class="stats3"><div class="stat"><b class="mono">${ok+bad}</b><span class="small muted">Karten</span></div><div class="stat"><b class="mono" style="color:var(--good)">${ok}</b><span class="small muted">gewusst</span></div><div class="stat"><b class="mono" style="color:var(--bad)">${bad}</b><span class="small muted">nochmal</span></div></div>
   ${errs.length?`<section class="panel stack"><h3>Regeln mit Fehlern</h3><div class="list">${errs.map(([k,n])=>`<div class="it"><button class="btn ghost" style="padding:0" data-act="why" data-rule="${k}">${esc(RULES[k].name)}</button><span class="chip">${n}×</span></div>`).join("")}</div><p class="small muted">Diese Regeln kommen in den nächsten Tagen häufiger dran.</p></section>`:""}
-  <section class="panel stack"><div class="spread"><h3>Küche · Level ${active}</h3><span class="chip">${ls.grad}/${ls.total}</span></div>${matBar(ls.b,ls.total)}</section>
+  <section class="panel stack"><div class="spread"><h3>${esc(CH.name)} · Level ${active}</h3><span class="chip">${ls.grad}/${ls.total}</span></div>${matBar(ls.b,ls.total)}</section>
   <button class="btn" data-act="endsess">Fertig</button>
   </main>${renderSheet()}`;
 }
 function showLevelUp(L){
   const words=[...NOUNS.filter(n=>n.lvl===L).map(n=>n.pl),...VERBS.filter(v=>v.lvl===L).map(v=>v.impf)];
   $layer.innerHTML=`<div class="levelup" role="dialog" aria-modal="true" aria-labelledby="luT"><div class="inner">
-    <div class="badge">${L}</div><div class="label">Küche & Essen</div><h1 id="luT">Level ${L} erreicht</h1>
-    <p class="muted">Jede Karte dieses Levels saß mindestens einmal.${L<3?" Level "+(L+1)+" ist jetzt frei.":""}</p>
+    <div class="badge">${L}</div><div class="label">${esc(CH.name)}</div><h1 id="luT">Level ${L} erreicht</h1>
+    <p class="muted">Jede Karte dieses Levels saß mindestens einmal.${LEVELS.includes(L+1)?" Level "+(L+1)+" ist jetzt frei.":""}</p>
     <div class="words">${words.map(w=>`<span class="chip">${esc(w)}</span>`).join("")}</div>
     <button class="btn" data-act="closelu">Weiter</button></div></div>`;
 }
@@ -1028,7 +842,7 @@ function renderOnb(){
       <p class="muted">${o.known} von ${o.words.length} Wörtern kennst du schon. Sie kommen bald einmal zur Kontrolle, aber nicht als neue Karten.</p>
       <div class="ladder">${STAGES.slice(0,8).map(s=>`<div class="${s.n<start?"done":s.n===start?"start":""}"><span class="n mono">${pad(s.n)}</span>${esc(s.name)}${s.n<start?'<span class="small" style="margin-left:auto">nur Wiederholung</span>':s.n===start?'<span class="small" style="margin-left:auto;color:var(--cobalt)">Startpunkt</span>':""}</div>`).join("")}</div>
       <div class="row"><button class="btn secondary" data-act="adj" data-d="-1" ${o.passed<=0?"disabled":""}>Eine Stufe tiefer</button><button class="btn secondary" data-act="adj" data-d="1" ${o.passed>=7?"disabled":""}>Eine höher</button></div>
-      <p class="small muted">Empfohlen: Küche & Essen, Level ${o.passed>=3?3:o.passed>=2?2:1}.</p>
+      <p class="small muted">Empfohlen: ${esc(CH.name)}, Level ${LEVELS.filter(L=>o.passed>=LEVEL_STAGE[L]-1).at(-1)||1}.</p>
       <button class="btn" data-act="onb" data-to="5">Weiter</button></div>`;
   }
   if(o.step===5)return `<div class="onb">
@@ -1051,7 +865,11 @@ function testNext(){
 }
 function toWords(){
   ONB.step=3;ONB.wi=0;ONB.known=0;ONB.kc=0;ONB.knownIds=[];
-  ONB.words=[...NOUNS.map(n=>({pl:n.pl,de:n.de,g:n.g,ids:["n:"+n.id+":dp","n:"+n.id+":pd"]})),...VERBS.map(v=>({pl:v.impf,de:v.de,ids:["v:"+v.id+":pair"]}))];
+  // Wörter aus den Leveln, die das Testergebnis freischaltet; höchstens 40, gleichmäßig verteilt
+  const lv=LEVELS.filter(L=>L===LEVELS[0]||ONB.passed>=LEVEL_STAGE[L]-1);
+  const all=[...NOUNS.filter(n=>lv.includes(n.lvl)).map(n=>({pl:n.pl,de:n.de,g:n.g,ids:["n:"+n.id+":dp","n:"+n.id+":pd"]})),...VERBS.filter(v=>lv.includes(v.lvl)).map(v=>({pl:v.impf,de:v.de,ids:["v:"+v.id+":pair"]}))];
+  const step=Math.max(1,all.length/40);
+  ONB.words=Array.from({length:Math.min(40,all.length)},(_,i)=>all[Math.floor(i*step)]);
 }
 function wordAnswer(known){
   const w=ONB.words[ONB.wi];
