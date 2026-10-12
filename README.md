@@ -9,7 +9,13 @@ Installierbare Web-App (PWA), läuft offline, kostenlos gehostet über GitHub Pa
 - **iPhone (Safari):** Seite öffnen → Teilen → „Zum Home-Bildschirm“
 - **Android (Chrome):** Seite öffnen → Menü ⋮ → „App installieren“
 
-Der Lernstand liegt auf dem Gerät (localStorage). Unter Einstellungen → Backup lässt er sich als Datei sichern und auf einem anderen Gerät wieder einlesen.
+Der Lernstand liegt nur auf dem Gerät (localStorage), nie im Repo. Unter Einstellungen → Backup lässt er sich als Datei sichern und auf einem anderen Gerät wieder einlesen.
+
+Zwei Speicher-Einträge:
+- `krok-state-v1`: Lernstand (Karten mit FSRS-Werten, Tage, Einstellungen)
+- `krok-revlog-v1`: vollständiger Verlauf aller Antworten, Grundlage für die spätere Anpassung von FSRS an den eigenen Verlauf. Pro Karte eine Zeichenkette `eintrag,eintrag,…`; Eintrag = Minuten seit 1.1.2026 (Basis 36) + Bewertung (1 Nochmal … 4 Einfach, 0 = im Onboarding als bekannt eingestuft). Etwa 7 Byte pro Antwort.
+
+Backups enthalten beides. Ältere Backups mit der Liste `log` (höchstens 3.000 Antworten) werden beim Einlesen umgewandelt.
 
 ## Lokal entwickeln
 Kein Build nötig.
