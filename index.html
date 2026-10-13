@@ -337,9 +337,10 @@ function logFromLegacy(state){
   for(const [id,list] of Object.entries(per)){list.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);out.cards[id]=list.map(([t,g])=>logEnc(t,g)).join(",");}
   return out;
 }
-function logStats(){
+/** Antworten zählen, optional erst ab einem Zeitpunkt (ms). Onboarding-Einträge (0) zählen nicht. */
+function logStats(since){
   let total=0,ok=0;
-  for(const s of Object.values(LOG.cards))for(const e of s.split(",")){const g=e.slice(-1);if(g==="0")continue;total++;if(g!=="1")ok++;}
+  for(const s of Object.values(LOG.cards))for(const e of s.split(",")){const g=e.slice(-1);if(g==="0")continue;if(since&&logDec(e).t<since)continue;total++;if(g!=="1")ok++;}
   return {total,ok};
 }
 
@@ -510,7 +511,7 @@ function renderToday(){
   const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||LEVELS[LEVELS.length-1];
   const ls=levelState(active);
   const mature=Object.values(S.cards).filter(x=>x.s>=21&&x.state===2).length;
-  const verbsPair=VERBS.filter(v=>st("v:"+v.id+":pair")&&st("v:"+v.id+":pair").state===2).length;
+  const wk=logStats(Date.now()-7*864e5);
   return `
   <div class="spread"><div class="brand"><i></i>Krok</div><button class="btn ghost" data-act="tab" data-v="settings">Einstellungen</button></div>
   <section class="hero">
@@ -529,7 +530,7 @@ function renderToday(){
   <div class="stats3">
     <div class="stat"><b class="mono">${sk.n}</b><span class="small muted">Tage Streak</span></div>
     <div class="stat"><b class="mono">${mature}</b><span class="small muted">reife Karten</span></div>
-    <div class="stat"><b class="mono">${verbsPair}/${VERBS.length}</b><span class="small muted">Aspektpaare</span></div>
+    <div class="stat"><b class="mono">${wk.total?Math.round(wk.ok/wk.total*100)+" %":"–"}</b><span class="small muted" title="Anteil gewusster Antworten in den letzten 7 Tagen">Trefferquote</span></div>
   </div>
   <section class="panel stack">
     <div class="spread"><div><div class="label">Aktives Kapitel</div><h3>${esc(CH.name)} · Level ${active}</h3></div><span class="chip">${ls.grad}/${ls.total}</span></div>
@@ -576,6 +577,17 @@ function renderLevelDetail(L){
 }
 
 /* ---------- Grammatik ---------- */
+/** Aspektpaare über alle Kapitel: wie viele kennengelernt und wie fest sie sitzen */
+function aspectPanel(){
+  if(!VERBS.length)return "";
+  const b={nw:0,learn:0,young:0,mature:0};VERBS.forEach(v=>b[matOf(st("v:"+v.id+":pair"))]++);
+  const seen=VERBS.length-b.nw;
+  return `<section class="panel stack">
+    <div class="spread"><h3>Aspektpaare</h3><span class="chip">${seen}/${VERBS.length}</span></div>
+    ${matBar(b,VERBS.length)}
+    <p class="small muted">Verben wie <i>pisać / napisać</i>: links der Vorgang, rechts das Ergebnis. Gezählt sind alle Paare, die du schon einmal gelernt hast.</p>
+  </section>`;
+}
 function renderGram(){
   const curStage=S.passed+1;
   const ladder=STAGES.map(s=>{
@@ -586,6 +598,7 @@ function renderGram(){
   });
   return `<div><div class="label">Grammatik-Leiter</div><h1>Deine Regeln</h1></div>
   <p class="muted">Startpunkt aus dem Einstiegstest: Stufe ${Math.min(curStage,10)}, ${esc(STAGES[Math.min(curStage,10)-1].name)}. Tippe auf eine Stufe für eine Erklärung mit deutschem und polnischem Beispiel, auf eine Regel für ihr Muster.</p>
+  ${aspectPanel()}
   ${ladder.map(({s,rs,tot,ok})=>`<section class="panel">
     <div class="spread"><button class="stagebtn" data-act="stage" data-s="${s.n}" aria-label="${esc(s.name)}: Was ist das?"><span class="mono muted">${pad(s.n)}</span><h3>${esc(s.name)}</h3><span class="info" aria-hidden="true">i</span></button>${s.n<=S.passed?'<span class="chip">aus dem Test</span>':""}</div>
     ${rs.length?`<div class="list">${rs.map(([k,r])=>{const v=S.ruleStats[k]||[0,0];const p=v[1]?Math.round(v[0]/v[1]*100):null;const sure=v[1]>=20&&p>=85;
