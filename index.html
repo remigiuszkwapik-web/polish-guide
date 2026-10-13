@@ -148,6 +148,7 @@ p{margin:0}
 .asym .line{width:28px;height:0;border-top:2px dashed var(--muted)}
 .asym .pt{width:9px;height:9px;border-radius:50%;background:var(--muted)}
 .rules{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pairin{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .rates{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .rates button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600;font-size:14px}
 .rates button small{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);font-weight:500}
@@ -717,8 +718,8 @@ function cardBody(c,isNew){
     h+=`<div class="prompt">${esc(r.pl)}</div>${gtag(r.g)}`;
     if(shown)h+=`<div class="answer" style="font-size:24px">${esc(r.de)}</div>`;
   } else if(c.kind==="verb_pair"){
-    h+=`<div class="prompt">${esc(r.de)}</div><p class="hint">Wie lautet das Paar: imperfektiv und perfektiv?</p>`;
-    if(shown)h+=`<div class="aspect"><div><span class="asym"><i class="line"></i>imperfektiv · Vorgang</span><span class="answer">${esc(r.impf)}</span></div><div><span class="asym"><i class="pt"></i>perfektiv · Ergebnis</span><span class="answer">${markEnding(r.pf,r.impf)===esc(r.pf)?highlightPrefix(r.pf,r.impf):markEnding(r.pf,r.impf)}</span></div></div>`;
+    h+=`<div class="prompt">${esc(r.de)}</div>${shown?"":`<p class="hint">Tippe beide Formen: imperfektiv und perfektiv.</p>`}`;
+    if(shown)h+=resultBlock("")+`<div class="aspect"><div><span class="asym"><i class="line"></i>imperfektiv · Vorgang</span><span class="answer">${esc(r.impf)}</span></div><div><span class="asym"><i class="pt"></i>perfektiv · Ergebnis</span><span class="answer">${markEnding(r.pf,r.impf)===esc(r.pf)?highlightPrefix(r.pf,r.impf):markEnding(r.pf,r.impf)}</span></div></div>`;
   } else if(c.kind==="verb_conj"){
     h+=`<div class="prompt">${esc(r.impf)} <span class="muted" style="font-size:20px">· ja</span></div><p class="hint">${esc(r.de)}. Wie heißt „ich …“?</p>`;
     if(shown)h+=resultBlock(`<div class="answer">${markEnding(r.ja,r.impf)}</div><p class="small muted">ty ${esc(r.ty)} · Regel: ${esc(RULES[r.rule].name)}</p>`);
@@ -741,7 +742,7 @@ function resultBlock(inner){
   const v=SESS.verdict;
   if(!v)return inner;
   const txt={ok:"Richtig",near:"Fast: achte auf die polnischen Zeichen",no:"Nicht ganz"}[v];
-  const typed=v!=="ok"&&SESS.input?`<p class="typed muted">Deine Antwort: <s>${esc(SESS.input)}</s></p>`:"";
+  const typed=v!=="ok"&&SESS.input?`<p class="typed muted">Deine Antwort: ${SESS.typedHtml||`<s>${esc(SESS.input)}</s>`}</p>`:"";
   return `<p class="verdict ${v}">${txt}</p>${typed}${inner}`;
 }
 function askControls(c){
@@ -750,6 +751,19 @@ function askControls(c){
       <label class="label" for="ans">Deine Antwort</label>
       <input id="ans" class="inp" value="${esc(SESS.input)}" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
       <div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>
+      <div class="row"><button type="button" class="btn secondary" data-act="giveup" style="flex:1">Weiß nicht</button><button class="btn" style="flex:2">Prüfen</button></div>
+    </form>`;
+  }
+  if(c.kind==="verb_pair"){
+    const kb=`<div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>`;
+    return `<form class="stack" data-form="type" autocomplete="off">
+      <div class="pairin">
+        <label class="stack" style="gap:6px" for="ans"><span class="asym"><i class="line"></i>imperfektiv</span>
+          <input id="ans" class="inp" value="${esc(SESS.input)}" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"></label>
+        <label class="stack" style="gap:6px" for="ans2"><span class="asym"><i class="pt"></i>perfektiv</span>
+          <input id="ans2" class="inp" value="${esc(SESS.input2||"")}" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>
+      </div>
+      ${kb}
       <div class="row"><button type="button" class="btn secondary" data-act="giveup" style="flex:1">Weiß nicht</button><button class="btn" style="flex:2">Prüfen</button></div>
     </form>`;
   }
@@ -796,8 +810,18 @@ function renderStageSheet(n){
     <button class="btn secondary" data-act="closesheet">Schließen</button>
   </div></div>`;
 }
-function submitTyped(val){
+function submitTyped(val,val2){
   const c=curCard(),r=c.ref;
+  if(c.kind==="verb_pair"){
+    // Beide Formen einzeln prüfen: beide richtig → ok, eine falsch → no, sonst (nur Zeichen) → near
+    const v=[check(val,r.impf),check(val2||"",r.pf)];
+    SESS.verdict=v.includes("no")?"no":v.every(x=>x==="ok")?"ok":"near";
+    SESS.input=(val||val2)?`${val||"–"} / ${val2||"–"}`:"";SESS.input2="";
+    // Nur den falschen Teil durchstreichen
+    const part=(x,ok)=>ok?esc(x||"–"):`<s>${esc(x||"–")}</s>`;
+    SESS.typedHtml=`${part(val,v[0]==="ok")} / ${part(val2,v[1]==="ok")}`;
+    SESS.suggest={ok:3,near:2,no:1}[SESS.verdict];SESS.phase="shown";render();return;
+  }
   const ans=c.kind==="noun_dp"?r.pl:c.kind==="verb_conj"?r.ja:r.a;
   SESS.input=val;SESS.verdict=check(val,ans);
   SESS.suggest={ok:3,near:2,no:1}[SESS.verdict];
@@ -822,7 +846,7 @@ function rate(g){
     (g>1?SESS.results.ok:SESS.results.bad).push(c.id);}
   SESS.queue.shift();
   if(g===1){const at=Math.min(3,SESS.queue.length);SESS.queue.splice(at,0,c.id);}
-  SESS.phase="ask";SESS.input="";SESS.verdict=null;SESS.suggest=0;SESS.picked=null;
+  SESS.phase="ask";SESS.input="";SESS.input2="";SESS.typedHtml="";SESS.verdict=null;SESS.suggest=0;SESS.picked=null;
   if(!SESS.queue.length){day.done=true;}
   save();
   const after=LEVELS.map(L=>levelState(L).reached);
@@ -969,7 +993,7 @@ function finishOnb(){
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-act],[data-key]");
   if(!el)return;
-  if(el.dataset.key){const inp=document.getElementById("ans");if(inp){const s=inp.selectionStart??inp.value.length,t=inp.selectionEnd??s;inp.value=inp.value.slice(0,s)+el.dataset.key+inp.value.slice(t);SESS.input=inp.value;inp.focus();inp.setSelectionRange(s+1,s+1);}return;}
+  if(el.dataset.key){const inp=document.getElementById(LASTINP)||document.getElementById("ans");if(inp){const s=inp.selectionStart??inp.value.length,t=inp.selectionEnd??s;inp.value=inp.value.slice(0,s)+el.dataset.key+inp.value.slice(t);if(inp.id==="ans2")SESS.input2=inp.value;else SESS.input=inp.value;inp.focus();inp.setSelectionRange(s+1,s+1);}return;}
   const a=el.dataset.act;
   if(a==="closesheet"){if(e.target.closest("[data-stop]")&&!e.target.closest('button[data-act="closesheet"]'))return;OVERLAY=null;render();return;}
   switch(a){
@@ -978,7 +1002,7 @@ document.addEventListener("click",e=>{
     case "quit":SESS=null;save();render();break;
     case "endsess":SESS=null;VIEW="today";render();break;
     case "reveal":SESS.phase="shown";SESS.suggest=0;render();break;
-    case "giveup":submitTyped("");break;
+    case "giveup":submitTyped("","");break;
     case "pick":{const c=curCard();SESS.picked=el.dataset.o;SESS.phase="shown";const ok=SESS.picked===c.ref.a;SESS.suggest=ok?3:1;ruleStat(c.rule,ok);render();break;}
     case "rate":rate(+el.dataset.g);break;
     case "why":OVERLAY={type:"why",rule:el.dataset.rule};if(SESS)render();else{$layer.innerHTML=renderSheet();}break;
@@ -1013,14 +1037,19 @@ document.addEventListener("click",e=>{
 // Sheet außerhalb der Session (Grammatik-Tab) schließen
 $layer.addEventListener("click",e=>{const el=e.target.closest('[data-act="closesheet"]');if(!el)return;if(e.target.closest("[data-stop]")&&!e.target.closest('button[data-act="closesheet"]'))return;OVERLAY=null;$layer.innerHTML="";e.stopPropagation();});
 document.addEventListener("submit",e=>{
-  if(e.target.dataset.form==="type"){e.preventDefault();const v=document.getElementById("ans").value;submitTyped(v);}
+  if(e.target.dataset.form==="type"){e.preventDefault();const v=document.getElementById("ans").value,i2=document.getElementById("ans2");
+    if(i2&&document.activeElement&&document.activeElement.id==="ans"&&!i2.value){i2.focus();return;} // Enter im ersten Feld: weiter zum zweiten
+    submitTyped(v,i2?i2.value:undefined);}
 });
-document.addEventListener("input",e=>{if(e.target.id==="ans"&&SESS)SESS.input=e.target.value;});
+document.addEventListener("input",e=>{if(!SESS)return;if(e.target.id==="ans")SESS.input=e.target.value;else if(e.target.id==="ans2")SESS.input2=e.target.value;});
+// Polnische Tasten schreiben ins zuletzt benutzte Feld
+let LASTINP="ans";
+document.addEventListener("focusin",e=>{if(e.target.id==="ans"||e.target.id==="ans2")LASTINP=e.target.id;});
 document.addEventListener("keydown",e=>{
   if(OVERLAY&&e.key==="Escape"){OVERLAY=null;$layer.innerHTML="";render();return;}
   if(!SESS||!curCard()||e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;
   if(SESS.phase==="shown"&&["1","2","3","4"].includes(e.key)){rate(+e.key);}
-  else if(SESS.phase==="ask"&&(e.key===" "||e.key==="Enter")&&["noun_pd","verb_pair"].includes(curCard().kind)){e.preventDefault();SESS.phase="shown";render();}
+  else if(SESS.phase==="ask"&&(e.key===" "||e.key==="Enter")&&curCard().kind==="noun_pd"){e.preventDefault();SESS.phase="shown";render();}
 });
 function bindKeys(){}
 function focusInput(){const i=document.getElementById("ans");if(i&&SESS&&SESS.phase==="ask"&&!OVERLAY){try{i.focus({preventScroll:true});}catch(e){}}}
