@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Alegreya:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
 <style>
 /* Layout: one-column phone app, tab bar at the bottom, the card is the centre of every session.
    Motif: cobalt dots from Bolesławiec stoneware. */
@@ -213,6 +213,104 @@ textarea{width:100%;min-height:120px;font-family:var(--font-mono);font-size:12px
 .syncnote{font-size:12px;color:var(--faint);text-align:center}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+/* ============================================================
+   Aussehen „Bolesławiec“ (Einstellungen → Aussehen). Klassisch bleibt Standard.
+   Steinzeug-Creme, Kobaltglasur, Pfauenauge. Alegreya für Übersichten, Literata/IBM Plex beim Lernen.
+   ============================================================ */
+:root[data-skin="boles"]{
+  --bg:#f4f1e8; --surface:#fffdf8; --surface-2:#ece7da; --line:#ddd5c3;
+  --ink:#16204a; --muted:#59607a; --faint:#7d8399;
+  --cobalt:#1d3a9a; --cobalt-soft:#cfd9f3; --sponge-2:#8fa3dc;
+  --amber:#a65f12; --amber-soft:#f3e2c4;
+  --m:#5b45b0; --f:#a8337a; --n:#17717a;
+  --good:#2f7347; --warn:#a65f12; --bad:#ae3434;
+  --r-again:#ae3434; --r-hard:#a65f12; --r-good:#2f7347; --r-easy:#1d3a9a;
+  --glaze-1:#fffefa; --glaze-2:#fbf6ec; --glaze-3:#efe5d0;
+  --rim:#1d3a9a; --rim-hi:#5677d8; --rim-lo:#10276c; --edge:#142c77; --tile-edge:#d3c8b0;
+  --plate-blue:#1d3a9a; --leaf:#3c7a60; --rust:#a9502c; --eye-w:#fffdf8;
+  --shade:22,32,74; --shine:255,255,255; --shine-a:.85;
+  --font-display:"Alegreya",Georgia,serif;
+  --font-body:"Alegreya Sans",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root[data-skin="boles"]:not([data-theme="light"]){
+  --bg:#0d1430; --surface:#151f47; --surface-2:#1e2a5a; --line:#2b3a70;
+  --ink:#f2ede0; --muted:#aab1cd; --faint:#7b84a6;
+  --cobalt:#a3b6f3; --cobalt-soft:#25346e; --sponge-2:#4d63b0;
+  --amber:#e3a453; --amber-soft:#3a2c17;
+  --m:#b3a3f0; --f:#ec8ec4; --n:#6cc6cc;
+  --good:#7fc495; --warn:#e3a453; --bad:#f08d8d;
+  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#a3b6f3;
+  --glaze-1:#25336f; --glaze-2:#1b2757; --glaze-3:#121a40;
+  --rim:#a3b6f3; --rim-hi:#dbe3fc; --rim-lo:#6c83d3; --edge:#4d63ad; --tile-edge:#0a1029;
+  --plate-blue:#2d4cb8; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
+  --shade:0,0,0; --shine-a:.18; color-scheme:dark}}
+:root[data-skin="boles"][data-theme="dark"]{
+  --bg:#0d1430; --surface:#151f47; --surface-2:#1e2a5a; --line:#2b3a70;
+  --ink:#f2ede0; --muted:#aab1cd; --faint:#7b84a6;
+  --cobalt:#a3b6f3; --cobalt-soft:#25346e; --sponge-2:#4d63b0;
+  --amber:#e3a453; --amber-soft:#3a2c17;
+  --m:#b3a3f0; --f:#ec8ec4; --n:#6cc6cc;
+  --good:#7fc495; --warn:#e3a453; --bad:#f08d8d;
+  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#a3b6f3;
+  --glaze-1:#25336f; --glaze-2:#1b2757; --glaze-3:#121a40;
+  --rim:#a3b6f3; --rim-hi:#dbe3fc; --rim-lo:#6c83d3; --edge:#4d63ad; --tile-edge:#0a1029;
+  --plate-blue:#2d4cb8; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
+  --shade:0,0,0; --shine-a:.18; color-scheme:dark}
+[data-skin="boles"] body{font-size:16px}
+[data-skin="boles"] h1{font-size:30px}
+[data-skin="boles"] .mono{font-family:var(--font-body);font-variant-numeric:tabular-nums lining-nums}
+[data-skin="boles"] .stat b{font-family:var(--font-display);font-size:26px}
+[data-skin="boles"] .panel,[data-skin="boles"] .stat{border-radius:18px}
+/* Knöpfe: Kobaltglasur */
+[data-skin="boles"] .btn:not(.secondary):not(.ghost){background:linear-gradient(170deg,var(--rim-hi) -40%,var(--cobalt) 45%,var(--rim-lo) 120%);color:var(--bg);border-radius:14px;min-height:50px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 var(--edge)}
+[data-skin="boles"] .btn.secondary{border-radius:14px;min-height:50px}
+[data-skin="boles"] .opts button[aria-pressed="true"]{color:var(--bg)}
+[data-skin="boles"] .chip.on{color:var(--bg)}
+/* Logo: Pfauenauge */
+[data-skin="boles"] .brand{font-size:24px}
+[data-skin="boles"] .brand i{width:28px;height:28px;background:radial-gradient(circle,var(--rust) 0 3.2px,var(--eye-w) 3.8px 6px,var(--leaf) 6.6px 8.8px,var(--eye-w) 9.4px 11.8px,var(--plate-blue) 12.4px)}
+/* Tellerbordüre (Heute, Abschluss) */
+[data-skin="boles"] .platecard{position:relative;isolation:isolate;border:3px solid var(--rim);border-radius:24px;overflow:hidden;
+  background:linear-gradient(170deg,var(--glaze-1),var(--glaze-2) 60%,var(--glaze-3));
+  box-shadow:inset 0 1px 0 rgba(var(--shine),var(--shine-a)),0 3px 0 var(--edge),0 5px 0 var(--edge),0 16px 26px -12px rgba(var(--shade),.45)}
+[data-skin="boles"] .platecard .pbody{padding:12px 18px 14px}
+.pband{display:flex;flex-direction:column}
+.pband.bottom{transform:scaleY(-1)}
+.pband .eyes{height:28px;background:radial-gradient(circle at 50% 50%,var(--rust) 0 2.4px,var(--eye-w) 2.9px 4.8px,var(--leaf) 5.3px 7px,var(--eye-w) 7.5px 9.6px,transparent 10.1px) 50% 50%/26px 28px repeat-x,var(--plate-blue)}
+.pband .scallop{height:12px;background:radial-gradient(circle at 50% 0,var(--plate-blue) 0 11.5px,transparent 12px) 50% 0/26px 12px repeat-x}
+.pband .leaves{height:22px;margin-top:-3px;background:radial-gradient(ellipse 3.2px 10px at 50% 45%,var(--leaf) 94%,transparent 100%) calc(50% + 13px) 0/26px 22px repeat-x}
+/* Ring: gepunktete Spur wie Stempeldekor */
+[data-skin="boles"] .ring circle:first-child{stroke:var(--cobalt-soft)}
+/* Lernkarte: sachlich, Kobaltrand, leichter Glanz, überall gleich hoch */
+[data-skin="boles"] .sess{--font-display:"Literata",Georgia,serif;--font-body:"IBM Plex Sans",system-ui,sans-serif;font-family:var(--font-body);font-size:15px}
+[data-skin="boles"] .card{isolation:isolate;min-height:220px;border:3px solid var(--rim);border-radius:22px;
+  background:linear-gradient(170deg,var(--glaze-1),var(--glaze-2) 70%,var(--glaze-3));
+  box-shadow:inset 0 1px 0 rgba(var(--shine),var(--shine-a)),0 3px 0 var(--edge),0 12px 20px -12px rgba(var(--shade),.4)}
+[data-skin="boles"] .card::after{inset:0;right:0;top:0;width:auto;height:auto;opacity:1;border-radius:19px;z-index:-1;
+  background:radial-gradient(120% 55% at 14% -12%,rgba(var(--shine),calc(var(--shine-a) * .7)) 0%,rgba(var(--shine),0) 55%)}
+[data-skin="boles"] .sessbar .bar span{border-radius:99px}
+/* Kleine Kacheln mit Glasurkante */
+[data-skin="boles"] .rates button,[data-skin="boles"] .keys button{background:linear-gradient(172deg,var(--glaze-1),var(--glaze-3));border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(var(--shine),var(--shine-a)),0 3px 0 var(--tile-edge)}
+[data-skin="boles"] .rates button.sugg{box-shadow:inset 0 1px 0 rgba(var(--shine),var(--shine-a)),0 3px 0 currentColor,0 0 0 3px color-mix(in srgb,currentColor 16%,transparent)}
+/* Genus zusätzlich per Form: maskulin Kreis, feminin Raute, neutrum Quadrat */
+[data-skin="boles"] .g-f .dot{border-radius:1px;transform:rotate(45deg) scale(.88)}
+[data-skin="boles"] .g-n .dot{border-radius:1px}
+/* Kapitelpfad: gepunktete Verbindung */
+[data-skin="boles"] .lvl::before{width:0;background:none;border-left:2px dotted var(--sponge-2)}
+[data-skin="boles"] .node.reached{box-shadow:0 0 0 4px var(--cobalt-soft)}
+/* Abschluss: Teller kippelt einmal und kommt zur Ruhe */
+@keyframes wobble{
+  0%{transform:perspective(900px) translateY(-16px) rotateX(10deg)}
+  13%{transform:perspective(900px) translateY(0) rotateY(8deg)}
+  29%{transform:perspective(900px) rotateX(-7deg)}
+  44%{transform:perspective(900px) rotateY(-5deg)}
+  60%{transform:perspective(900px) rotateX(3.5deg)}
+  73%{transform:perspective(900px) rotateY(2deg)}
+  87%{transform:perspective(900px) rotateX(-1deg)}
+  100%{transform:none}}
+[data-skin="boles"] .wobble{animation:wobble 2s cubic-bezier(.3,.6,.4,1) 1;transform-origin:50% 60%}
+@media (prefers-reduced-motion:reduce){[data-skin="boles"] .wobble{animation:none}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -315,7 +413,7 @@ function fmtIv(ms){
    ============================================================ */
 const KEY="krok-state-v1";
 let S=null, storageOk=true, persisted=false;
-function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,backlogLimit:30,cards:{},days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
+function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,backlogLimit:30,skin:"classic",polKeys:true,cards:{},days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
 function lsGet(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null;}catch(e){storageOk=false;return null;}}
 function lsSet(){try{localStorage.setItem(KEY,JSON.stringify(S));storageOk=true;}catch(e){storageOk=false;}}
 function save(){S.savedAt=Date.now();lsSet();}
@@ -498,8 +596,19 @@ const ICONS={
 let VIEW="today", OVERLAY=null, ONB=null, LVLDETAIL=null;
 const $app=document.getElementById("app"), $layer=document.getElementById("layer");
 
+/** Aussehen setzen: data-skin auf <html>, Statusleisten-Farbe passend */
+function applySkin(){
+  const b=S.skin==="boles";
+  if(b)document.documentElement.dataset.skin="boles";else delete document.documentElement.dataset.skin;
+  const m=document.querySelectorAll('meta[name="theme-color"]');
+  if(m.length===2){m[0].content=b?"#f4f1e8":"#f3f4f1";m[1].content=b?"#0d1430":"#121614";}
+}
+const isBoles=()=>S&&S.skin==="boles";
+/** Tellerbordüre: Augen auf Kobalt, Bögen, optional Blätter */
+function band(bottom,leaves){return `<div class="pband${bottom?" bottom":""}" aria-hidden="true"><div class="eyes"></div><div class="scallop"></div>${leaves?'<div class="leaves"></div>':""}</div>`;}
 function render(){
   if(!S){return;}
+  applySkin();
   if(!S.onboarded){if(!ONB)ONB={step:0};$app.innerHTML=renderOnb();bindKeys();return;}
   if(SESS){$app.innerHTML=renderSession();bindKeys();focusInput();return;}
   let body="";
@@ -534,7 +643,7 @@ function renderToday(){
   const wk=logStats(Date.now()-7*864e5);
   return `
   <div class="spread"><div class="brand"><i></i>Krok</div><button class="btn ghost" data-act="tab" data-v="settings">Einstellungen</button></div>
-  <section class="hero">
+  ${isBoles()?`<section class="platecard">${band(false,true)}<div class="pbody">`:""}<section class="hero">
     <div class="ring" role="img" aria-label="Tagesziel ${Math.round(pct*100)} Prozent">
       <svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
       <circle cx="56" cy="56" r="48" fill="none" stroke="var(--cobalt)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}"/></svg>
@@ -544,7 +653,7 @@ function renderToday(){
       <h1>${day.done?"Für heute geschafft":q.length?"Heute dran":"Nichts mehr fällig"}</h1>
       <p class="muted">${day.done&&!q.length?"Morgen warten neue Wiederholungen.":`${dueN}&nbsp;${dueN===1?"Wiederholung":"Wiederholungen"}${stepN?` · ${stepN}&nbsp;${stepN===1?"Lernschritt":"Lernschritte"}`:""} · ${newN}&nbsp;${newN===1?"neue&nbsp;Karte":"neue&nbsp;Karten"}`}</p>
     </div>
-  </section>
+  </section>${isBoles()?`</div>${band(true,false)}</section>`:""}
   ${bk.braked?`<div class="brake" role="note"><b>${bk.allowed?`Heute ${bk.allowed} statt ${bk.full} neue Karten`:"Heute keine neuen Karten"}</b><span>Heute waren ${bk.due} Wiederholungen offen. Damit der Rückstand nicht wächst, kommen ${bk.allowed?"weniger neue":"keine neuen"} dazu. Morgen wird neu gerechnet: Sind höchstens ${Math.floor(bk.lim/2)} offen, gibt es wieder alle ${bk.full}.</span></div>`:""}
   ${q.length?`<button class="btn" data-act="start">${day.rev+day.nw?"Session fortsetzen":"Session starten"}</button>`:`<button class="btn secondary" disabled>Keine Karten fällig</button>`}
   <div class="stats3">
@@ -666,6 +775,10 @@ function renderSettings(){
     <div class="opts">${[10,15,20,30].map(n=>`<button data-act="npd" data-n="${n}" aria-pressed="${S.newPerDay===n}">${n}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Neue Karten bei Rückstand bremsen</h3><p class="small muted">Sind viele Wiederholungen offen, kommen weniger neue Karten dazu. Ab dem Wert hier pausieren sie ganz, ab der Hälfte davon gibt es wieder die volle Menge.</p>
     <div class="opts">${[[0,"Aus"],[20,"20"],[30,"30"],[50,"50"]].map(([n,l])=>`<button data-act="blim" data-n="${n}" aria-pressed="${(S.backlogLimit||0)===n}">${l}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Aussehen</h3><p class="small muted">Klassisch oder im Stil von Bunzlauer Keramik. Dein Lernstand bleibt gleich.</p>
+    <div class="opts">${[["classic","Klassisch"],["boles","Bolesławiec"]].map(([k,l])=>`<button data-act="skin" data-s="${k}" aria-pressed="${(S.skin||"classic")===k}">${l}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Polnische Tastenleiste</h3><p class="small muted">Zeigt ą, ć, ę … über der Eingabe. Aus, wenn du die polnische Tastatur deines Handys nutzt.</p>
+    <div class="opts">${[[true,"An"],[false,"Aus"]].map(([v,l])=>`<button data-act="polkeys" data-on="${v?1:0}" aria-pressed="${(S.polKeys!==false)===v}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Backup</h3><p class="small muted">Exportiere deinen Lernstand als JSON-Datei oder lies ein Backup wieder ein.</p>
     <button class="btn secondary" data-act="export">Backup als Datei speichern</button>
     <label class="btn secondary filebtn" for="impfile">Backup-Datei einlesen<input id="impfile" type="file" accept="application/json,.json"></label>
@@ -697,7 +810,7 @@ function renderSession(){
   const pct=Math.min(100,doneN/Math.max(1,SESS.total)*100);
   const x=st(c.id);
   const isNew=!x||!x.state;
-  return `<main style="padding-bottom:24px">
+  return `<main class="sess" style="padding-bottom:24px">
     <div class="sessbar"><button class="closebtn" data-act="quit" aria-label="Session beenden"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="bar"><span style="width:${pct}%;background:var(--cobalt)"></span></div><span class="small mono muted">${doneN}/${SESS.total}</span></div>
     <article class="card" aria-live="polite">${cardBody(c,isNew)}</article>
@@ -750,12 +863,12 @@ function askControls(c){
     return `<form class="stack" data-form="type" autocomplete="off">
       <label class="label" for="ans">Deine Antwort</label>
       <input id="ans" class="inp" value="${esc(SESS.input)}" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
-      <div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>
+      ${S.polKeys===false?"":`<div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>`}
       <div class="row"><button type="button" class="btn secondary" data-act="giveup" style="flex:1">Weiß nicht</button><button class="btn" style="flex:2">Prüfen</button></div>
     </form>`;
   }
   if(c.kind==="verb_pair"){
-    const kb=`<div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>`;
+    const kb=S.polKeys===false?"":`<div class="keys" aria-label="Polnische Zeichen">${["ą","ć","ę","ł","ń","ó","ś","ź","ż"].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join("")}</div>`;
     return `<form class="stack" data-form="type" autocomplete="off">
       <div class="pairin">
         <label class="stack" style="gap:6px" for="ans"><span class="asym"><i class="line"></i>imperfektiv</span>
@@ -780,7 +893,7 @@ function rateButtons(c){
   return `<div class="stack">
     ${isGram?`<button class="whybtn" data-act="why" data-rule="${c.rule}">Warum?</button>`:""}
     <div class="rates">${[1,2,3,4].map(g=>`<button data-act="rate" data-g="${g}" class="${g===sugg?"sugg":""}">${names[g]}<small>${fmtIv(p[g].ms)}</small></button>`).join("")}</div>
-    ${sugg?`<p class="small muted" style="text-align:center">Vorschlag markiert. Du entscheidest.</p>`:""}
+    ${sugg&&!isBoles()?`<p class="small muted" style="text-align:center">Vorschlag markiert. Du entscheidest.</p>`:""}
   </div>`;
 }
 function renderSheet(){
@@ -861,7 +974,8 @@ function renderSummary(){
   const ls=levelState(active);
   const sk=streak();
   return `<main>
-  <div class="stack" style="align-items:flex-start"><div class="label">Session beendet</div><h1>Gut gemacht</h1><p class="muted">${sk.n} ${sk.n===1?"Tag":"Tage"} in Folge.</p></div>
+  ${isBoles()?`<section class="platecard wobble">${band(false,true)}<div class="pbody stack" style="align-items:center;text-align:center;gap:6px"><div class="label">Session beendet</div><h1 style="font-size:38px">Gotowe!</h1><p class="muted">Gut gemacht. ${sk.n} ${sk.n===1?"Tag":"Tage"} in Folge.</p></div>${band(true,false)}</section>`
+    :`<div class="stack" style="align-items:flex-start"><div class="label">Session beendet</div><h1>Gut gemacht</h1><p class="muted">${sk.n} ${sk.n===1?"Tag":"Tage"} in Folge.</p></div>`}
   <div class="stats3"><div class="stat"><b class="mono">${ok+bad}</b><span class="small muted">Karten</span></div><div class="stat"><b class="mono" style="color:var(--good)">${ok}</b><span class="small muted">gewusst</span></div><div class="stat"><b class="mono" style="color:var(--bad)">${bad}</b><span class="small muted">nochmal</span></div></div>
   ${errs.length?`<section class="panel stack"><h3>Regeln mit Fehlern</h3><div class="list">${errs.map(([k,n])=>`<div class="it"><button class="btn ghost" style="padding:0" data-act="why" data-rule="${k}">${esc(RULES[k].name)}</button><span class="chip">${n}×</span></div>`).join("")}</div><p class="small muted">Diese Regeln kommen in den nächsten Tagen häufiger dran.</p></section>`:""}
   <section class="panel stack"><div class="spread"><h3>${esc(CH.name)} · Level ${active}</h3><span class="chip">${ls.grad}/${ls.total}</span></div>${matBar(ls.b,ls.total)}</section>
@@ -1012,6 +1126,8 @@ document.addEventListener("click",e=>{
     case "closelu":$layer.innerHTML="";break;
     case "npd":S.newPerDay=+el.dataset.n;delete today().budget;save();render();break;
     case "blim":S.backlogLimit=+el.dataset.n;delete today().budget;save();render();break;
+    case "skin":S.skin=el.dataset.s==="boles"?"boles":"classic";save();render();break;
+    case "polkeys":S.polKeys=el.dataset.on==="1";save();render();break;
     case "export":doExport();break;
     case "import":doImport();break;
     case "retest":S.onboarded=false;ONB={step:1};render();break;
