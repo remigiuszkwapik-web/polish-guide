@@ -233,29 +233,55 @@ textarea{width:100%;min-height:120px;font-family:var(--font-mono);font-size:12px
   --font-body:"Alegreya Sans",system-ui,-apple-system,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root[data-skin="boles"]:not([data-theme="light"]){
-  --bg:#0d1430; --surface:#151f47; --surface-2:#1e2a5a; --line:#2b3a70;
-  --ink:#f2ede0; --muted:#aab1cd; --faint:#7b84a6;
-  --cobalt:#a3b6f3; --cobalt-soft:#25346e; --sponge-2:#4d63b0;
-  --amber:#e3a453; --amber-soft:#3a2c17;
+  --bg:#0f1015; --surface:#181a21; --surface-2:#23262f; --line:#2f333e;
+  --ink:#ecebe6; --muted:#a5a8b4; --faint:#777b88;
+  --cobalt:#9fb2ef; --cobalt-soft:#272d47; --sponge-2:#56659c;
+  --amber:#e3a453; --amber-soft:#33281a;
   --m:#b3a3f0; --f:#ec8ec4; --n:#6cc6cc;
   --good:#7fc495; --warn:#e3a453; --bad:#f08d8d;
-  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#a3b6f3;
-  --glaze-1:#25336f; --glaze-2:#1b2757; --glaze-3:#121a40;
-  --rim:#a3b6f3; --rim-hi:#dbe3fc; --rim-lo:#6c83d3; --edge:#4d63ad; --tile-edge:#0a1029;
-  --plate-blue:#2d4cb8; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
-  --shade:0,0,0; --shine-a:.18; color-scheme:dark}}
+  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#9fb2ef;
+  --glaze-1:#23262f; --glaze-2:#1d2028; --glaze-3:#181a21;
+  --rim:#9fb2ef; --rim-hi:#d6defa; --rim-lo:#6c80c9; --edge:#0a0b0f; --tile-edge:#08090c;
+  --plate-blue:#22409e; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
+  --shade:0,0,0; --shine-a:.14; color-scheme:dark}}
 :root[data-skin="boles"][data-theme="dark"]{
-  --bg:#0d1430; --surface:#151f47; --surface-2:#1e2a5a; --line:#2b3a70;
-  --ink:#f2ede0; --muted:#aab1cd; --faint:#7b84a6;
-  --cobalt:#a3b6f3; --cobalt-soft:#25346e; --sponge-2:#4d63b0;
-  --amber:#e3a453; --amber-soft:#3a2c17;
+  --bg:#0f1015; --surface:#181a21; --surface-2:#23262f; --line:#2f333e;
+  --ink:#ecebe6; --muted:#a5a8b4; --faint:#777b88;
+  --cobalt:#9fb2ef; --cobalt-soft:#272d47; --sponge-2:#56659c;
+  --amber:#e3a453; --amber-soft:#33281a;
   --m:#b3a3f0; --f:#ec8ec4; --n:#6cc6cc;
   --good:#7fc495; --warn:#e3a453; --bad:#f08d8d;
-  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#a3b6f3;
-  --glaze-1:#25336f; --glaze-2:#1b2757; --glaze-3:#121a40;
-  --rim:#a3b6f3; --rim-hi:#dbe3fc; --rim-lo:#6c83d3; --edge:#4d63ad; --tile-edge:#0a1029;
-  --plate-blue:#2d4cb8; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
-  --shade:0,0,0; --shine-a:.18; color-scheme:dark}
+  --r-again:#f08d8d; --r-hard:#e3a453; --r-good:#7fc495; --r-easy:#9fb2ef;
+  --glaze-1:#23262f; --glaze-2:#1d2028; --glaze-3:#181a21;
+  --rim:#9fb2ef; --rim-hi:#d6defa; --rim-lo:#6c80c9; --edge:#0a0b0f; --tile-edge:#08090c;
+  --plate-blue:#22409e; --leaf:#74b597; --rust:#e0895f; --eye-w:#f2ede0;
+  --shade:0,0,0; --shine-a:.14; color-scheme:dark}
+/* Dunkelmodus: neutraler, fast schwarzer Grund; Karten und Teller als helle Keramik in Weißgrau, damit sie herausstechen */
+@media (prefers-color-scheme: dark){:root[data-skin="boles"]:not([data-theme="light"]) :is(.card,.platecard){
+  --bg:#f4f2ec; --surface:#e2dfd8; --surface-2:#d0cbc1; --line:#b8b2a5;
+  --ink:#191c29; --muted:#4e5366; --faint:#6b7080;
+  --cobalt:#22409e; --cobalt-soft:#c3cdea; --sponge-2:#8394c9;
+  --amber:#8f520e; --amber-soft:#ead6b4;
+  --m:#5b45b0; --f:#a0306f; --n:#166a72;
+  --good:#2b6b42; --warn:#8f520e; --bad:#a33131;
+  --glaze-1:#e7e4dd; --glaze-2:#dcd8cf; --glaze-3:#ccc7bc;
+  --rim:#22409e; --rim-hi:#5677d8; --rim-lo:#162f80; --edge:#8a8478;
+  --plate-blue:#22409e; --leaf:#3c7a60; --rust:#a9502c; --eye-w:#f4f2ec;
+  --shine-a:.55; color:var(--ink)}}
+:root[data-skin="boles"][data-theme="dark"] :is(.card,.platecard){
+  --bg:#f4f2ec; --surface:#e2dfd8; --surface-2:#d0cbc1; --line:#b8b2a5;
+  --ink:#191c29; --muted:#4e5366; --faint:#6b7080;
+  --cobalt:#22409e; --cobalt-soft:#c3cdea; --sponge-2:#8394c9;
+  --amber:#8f520e; --amber-soft:#ead6b4;
+  --m:#5b45b0; --f:#a0306f; --n:#166a72;
+  --good:#2b6b42; --warn:#8f520e; --bad:#a33131;
+  --glaze-1:#e7e4dd; --glaze-2:#dcd8cf; --glaze-3:#ccc7bc;
+  --rim:#22409e; --rim-hi:#5677d8; --rim-lo:#162f80; --edge:#8a8478;
+  --plate-blue:#22409e; --leaf:#3c7a60; --rust:#a9502c; --eye-w:#f4f2ec;
+  --shine-a:.55; color:var(--ink)}
+/* Dunkel: Hauptknopf in Tellerkobalt statt hellem Blau, ruhiger */
+@media (prefers-color-scheme: dark){:root[data-skin="boles"]:not([data-theme="light"]) .btn:not(.secondary):not(.ghost){background:linear-gradient(170deg,#4a68cf -40%,#22409e 45%,#162f80 120%);color:#f4f2ec;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 #0a0b0f}}
+:root[data-skin="boles"][data-theme="dark"] .btn:not(.secondary):not(.ghost){background:linear-gradient(170deg,#4a68cf -40%,#22409e 45%,#162f80 120%);color:#f4f2ec;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 #0a0b0f}
 [data-skin="boles"] body{font-size:16px}
 [data-skin="boles"] h1{font-size:30px}
 [data-skin="boles"] .mono{font-family:var(--font-body);font-variant-numeric:tabular-nums lining-nums}
@@ -413,7 +439,7 @@ function fmtIv(ms){
    ============================================================ */
 const KEY="krok-state-v1";
 let S=null, storageOk=true, persisted=false;
-function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,backlogLimit:30,skin:"classic",polKeys:true,cards:{},days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
+function fresh(){return {v:1,savedAt:0,onboarded:false,passed:0,newPerDay:20,backlogLimit:30,skin:"classic",mode:"auto",polKeys:true,cards:{},days:{},ruleStats:{},knownCount:0,levelsSeen:{},firstDay:null};}
 function lsGet(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null;}catch(e){storageOk=false;return null;}}
 function lsSet(){try{localStorage.setItem(KEY,JSON.stringify(S));storageOk=true;}catch(e){storageOk=false;}}
 function save(){S.savedAt=Date.now();lsSet();}
@@ -600,8 +626,12 @@ const $app=document.getElementById("app"), $layer=document.getElementById("layer
 function applySkin(){
   const b=S.skin==="boles";
   if(b)document.documentElement.dataset.skin="boles";else delete document.documentElement.dataset.skin;
+  // Hell/Dunkel: automatisch nach System oder fest eingestellt
+  const mode=S.mode==="light"||S.mode==="dark"?S.mode:"auto";
+  if(mode==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=mode;
+  const L=b?"#f4f1e8":"#f3f4f1", D=b?"#0f1015":"#121614";
   const m=document.querySelectorAll('meta[name="theme-color"]');
-  if(m.length===2){m[0].content=b?"#f4f1e8":"#f3f4f1";m[1].content=b?"#0d1430":"#121614";}
+  if(m.length===2){m[0].content=mode==="dark"?D:L;m[1].content=mode==="light"?L:D;}
 }
 const isBoles=()=>S&&S.skin==="boles";
 /** Tellerbordüre: Augen auf Kobalt, Bögen, optional Blätter */
@@ -777,6 +807,8 @@ function renderSettings(){
     <div class="opts">${[[0,"Aus"],[20,"20"],[30,"30"],[50,"50"]].map(([n,l])=>`<button data-act="blim" data-n="${n}" aria-pressed="${(S.backlogLimit||0)===n}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Aussehen</h3><p class="small muted">Klassisch oder im Stil von Bunzlauer Keramik. Dein Lernstand bleibt gleich.</p>
     <div class="opts">${[["classic","Klassisch"],["boles","Bolesławiec"]].map(([k,l])=>`<button data-act="skin" data-s="${k}" aria-pressed="${(S.skin||"classic")===k}">${l}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Hell oder dunkel</h3><p class="small muted">Automatisch folgt der Einstellung deines Handys.</p>
+    <div class="opts">${[["auto","Automatisch"],["light","Hell"],["dark","Dunkel"]].map(([k,l])=>`<button data-act="mode" data-s="${k}" aria-pressed="${(S.mode||"auto")===k}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Polnische Tastenleiste</h3><p class="small muted">Zeigt ą, ć, ę … über der Eingabe. Aus, wenn du die polnische Tastatur deines Handys nutzt.</p>
     <div class="opts">${[[true,"An"],[false,"Aus"]].map(([v,l])=>`<button data-act="polkeys" data-on="${v?1:0}" aria-pressed="${(S.polKeys!==false)===v}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Backup</h3><p class="small muted">Exportiere deinen Lernstand als JSON-Datei oder lies ein Backup wieder ein.</p>
@@ -1127,6 +1159,7 @@ document.addEventListener("click",e=>{
     case "npd":S.newPerDay=+el.dataset.n;delete today().budget;save();render();break;
     case "blim":S.backlogLimit=+el.dataset.n;delete today().budget;save();render();break;
     case "skin":S.skin=el.dataset.s==="boles"?"boles":"classic";save();render();break;
+    case "mode":S.mode=["light","dark"].includes(el.dataset.s)?el.dataset.s:"auto";save();render();break;
     case "polkeys":S.polKeys=el.dataset.on==="1";save();render();break;
     case "export":doExport();break;
     case "import":doImport();break;
