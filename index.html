@@ -276,13 +276,18 @@ function sRecall(d,s,r,g){return s*(Math.exp(W[8])*(11-d)*Math.pow(s,-W[9])*(Mat
 function sForget(d,s,r){return Math.min(s,W[11]*Math.pow(d,-W[12])*(Math.pow(s+1,W[13])-1)*Math.exp(W[14]*(1-r)));}
 function sShort(s,g){return s*Math.exp(W[17]*(g-3+W[18]));}
 /** Ergebnis für alle vier Bewertungen; interval in ms */
+/** Tagesbeginn (00:00 Ortszeit) des Tages, der `days` Kalendertage nach t liegt. Sommerzeit-sicher. */
+function dayStart(t,days=0){const d=new Date(t);d.setDate(d.getDate()+days);d.setHours(0,0,0,0);return d.getTime();}
+function calDays(a,b){return Math.max(0,Math.round((dayStart(b)-dayStart(a))/DAY));}
+/** Fälligkeit: Wiederholungen ab 1 Tag gelten ab Tagesbeginn, damit alles Fällige morgens auf einmal kommt. Lernschritte minutengenau. */
+function dueAt(now,p){return p.days?dayStart(now,p.days):now+p.ms;}
 function fsrsPreview(st,now){
   const out={};
   for(const g of [1,2,3,4]){
     let s,d;
     if(!st||!st.state){s=W[g-1];d=D0(g);}
     else{
-      const t=Math.max(0,(now-st.last)/DAY);
+      const t=calDays(st.last,now); // ganze Kalendertage wie in Anki, sonst gälte eine Karte von gestern Abend morgens noch als „heute gelernt“
       d=nextD(st.d,g);
       if(t<1) s=sShort(st.s,g);
       else{const r=retr(t,st.s);s=g===1?sForget(st.d,st.s,r):sRecall(st.d,st.s,r,g);}
@@ -344,6 +349,12 @@ function logStats(since){
   return {total,ok};
 }
 
+/** Alte Lernstände (minutengenaue Termine) einmalig umstellen. Gibt true zurück, wenn etwas geändert wurde. */
+function snapDues(){
+  if(S.dueAtDayStart)return false;
+  for(const x of Object.values(S.cards))if(x&&x.state===2&&x.due)x.due=dayStart(x.due);
+  S.dueAtDayStart=1;return true;
+}
 async function initStore(){
   S=Object.assign(fresh(),lsGet()||{});
   logLoad();
@@ -352,6 +363,8 @@ async function initStore(){
     if(!Object.keys(LOG.cards).length){LOG=logFromLegacy(S);logSave();}
     delete S.log;lsSet();
   }
+  // Einmalig: geplante Wiederholungen auf den Tagesbeginn ihres Fälligkeitstags vorziehen (nur der Termin ändert sich)
+  if(snapDues())lsSet();
   render();
   // Browser bitten, den Lernstand nicht automatisch zu löschen
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persisted()||await navigator.storage.persist();render();}}catch(e){}
@@ -405,7 +418,7 @@ let SESS=null;
 function buildQueue(){
   const now=Date.now(), day=today();
   const unlocked=LEVELS.filter(levelUnlocked);
-  const due=CARDS.filter(c=>st(c.id)&&st(c.id).state&&st(c.id).due<=now+60*MIN)
+  const due=CARDS.filter(c=>{const x=st(c.id);return x&&x.state&&x.due<=(x.state===2?now:now+60*MIN);})
     .sort((a,b)=>st(a.id).due-st(b.id).due);
   const nb=newBudget(due.filter(c=>isReview(st(c.id))).length);
   const left=Math.max(0,nb.allowed-day.nw);
@@ -437,9 +450,9 @@ function newBudget(dueReviews){
   const f=(lim-dueReviews)/(lim/2);
   return {allowed:Math.round(full*f),full,braked:true,due:dueReviews,lim};
 }
-/** Offene Wiederholung: Karte im Wiederholungszustand, die in der Session drankommt (fällig oder innerhalb der nächsten Stunde).
+/** Offene Wiederholung: Karte im Wiederholungszustand, die heute fällig ist.
  *  Lernschritte zählen nicht. Dieselbe Definition für Heute-Screen und Bremse, damit beide dieselbe Zahl zeigen. */
-function isReview(x){return !!x&&x.state===2&&x.due<=Date.now()+60*MIN;}
+function isReview(x){return !!x&&x.state===2&&x.due<=Date.now();}
 function brakeInfo(){
   return newBudget(CARDS.filter(c=>isReview(st(c.id))).length);
 }
@@ -524,7 +537,7 @@ function renderToday(){
     </div>
     <div class="stack" style="gap:6px">
       <h1>${day.done?"Für heute geschafft":q.length?"Heute dran":"Nichts mehr fällig"}</h1>
-      <p class="muted">${day.done&&!q.length?"Morgen warten neue Wiederholungen.":`${dueN}&nbsp;Wiederholungen${stepN?` · ${stepN}&nbsp;${stepN===1?"Lernschritt":"Lernschritte"}`:""} · ${newN}&nbsp;neue&nbsp;Karten`}</p>
+      <p class="muted">${day.done&&!q.length?"Morgen warten neue Wiederholungen.":`${dueN}&nbsp;${dueN===1?"Wiederholung":"Wiederholungen"}${stepN?` · ${stepN}&nbsp;${stepN===1?"Lernschritt":"Lernschritte"}`:""} · ${newN}&nbsp;${newN===1?"neue&nbsp;Karte":"neue&nbsp;Karten"}`}</p>
     </div>
   </section>
   ${bk.braked?`<div class="brake" role="note"><b>${bk.allowed?"Weniger neue Karten":"Neue Karten pausiert"}</b><span>${bk.due} Wiederholungen sind offen. ${bk.allowed?`Heute kommen ${bk.allowed} statt ${bk.full} neue Karten dazu.`:"Arbeite erst den Rückstand ab."} Unter ${Math.floor(bk.lim/2)} offenen gibt es wieder alle ${bk.full}.</span></div>`:""}
@@ -796,7 +809,7 @@ function rate(g){
   const wasNew=!prev||!prev.state;
   const p=fsrsPreview(prev,now)[g];
   const day=today();
-  const nx={s:p.s,d:p.d,last:now,due:now+p.ms,reps:(prev?prev.reps:0)+1,lapses:(prev?prev.lapses:0)+(g===1&&!wasNew?1:0),
+  const nx={s:p.s,d:p.d,last:now,due:dueAt(now,p),reps:(prev?prev.reps:0)+1,lapses:(prev?prev.lapses:0)+(g===1&&!wasNew?1:0),
     state:g===1?1:2,intro:prev&&prev.intro?prev.intro:dayKey(now)};
   S.cards[c.id]=nx;
   logAdd(c.id,now,g);logSave();
@@ -937,10 +950,10 @@ function finishOnb(){
   const now=Date.now();
   S.passed=ONB.passed;S.newPerDay=ONB.npd;S.knownCount=ONB.known;
   // bekannte Wörter: Startzustand mit längerem Intervall
-  ONB.knownIds.forEach((id,i)=>{if(!S.cards[id]||!S.cards[id].state){S.cards[id]={s:8,d:4,last:now,due:now+(3+(i%6))*DAY,reps:1,lapses:0,state:2,intro:dayKey(now),seed:1};logAdd(id,now,0);}});
+  ONB.knownIds.forEach((id,i)=>{if(!S.cards[id]||!S.cards[id].state){S.cards[id]={s:8,d:4,last:now,due:dayStart(now,3+(i%6)),reps:1,lapses:0,state:2,intro:dayKey(now),seed:1};logAdd(id,now,0);}});
   // Regeln unter dem Startpunkt: Aufgaben als Wiederholung einplanen
   CARDS.filter(c=>c.rule&&RULES[c.rule].stage<=S.passed&&c.kind.startsWith("drill")).forEach((c,i)=>{
-    if(!S.cards[c.id]||!S.cards[c.id].state){S.cards[c.id]={s:6,d:5,last:now,due:now+(2+(i%7))*DAY,reps:1,lapses:0,state:2,intro:dayKey(now),seed:1};logAdd(c.id,now,0);}
+    if(!S.cards[c.id]||!S.cards[c.id].state){S.cards[c.id]={s:6,d:5,last:now,due:dayStart(now,2+(i%7)),reps:1,lapses:0,state:2,intro:dayKey(now),seed:1};logAdd(c.id,now,0);}
   });
   S.onboarded=true;ONB=null;save();
   startSession();
@@ -1025,7 +1038,7 @@ function importText(t){
     // Neue Backups bringen den Verlauf mit (revlog), alte nur die Liste log mit höchstens 3.000 Antworten
     const lg=r.revlog&&r.revlog.cards?r.revlog:logFromLegacy(r);
     delete r.revlog;delete r.log;
-    S=Object.assign(fresh(),r);S.savedAt=Date.now();LOG=lg;logSave();save();
+    S=Object.assign(fresh(),r);snapDues();S.savedAt=Date.now();LOG=lg;logSave();save();
     toast("Backup eingelesen");VIEW="today";render();
   }
   catch(e){toast("Das ist kein gültiges Krok-Backup. Wähle die .json-Datei, die du exportiert hast.");}
