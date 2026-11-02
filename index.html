@@ -725,14 +725,18 @@ function renderChap(){
 }
 function renderLevelDetail(L){
   const cs=CARDS.filter(c=>c.lvl===L);
-  const words=[...NOUNS.filter(n=>n.lvl===L).map(n=>({pl:n.pl,de:n.de,g:n.g,ids:["n:"+n.id+":dp","n:"+n.id+":pd"]})),
-    ...VERBS.filter(v=>v.lvl===L).map(v=>({pl:v.impf+" / "+v.pf,de:v.de,ids:["v:"+v.id+":pair","v:"+v.id+":conj"]}))];
-  const worst=ids=>{const order=["nw","learn","young","mature"];return ids.map(i=>matOf(st(i))).sort((a,b)=>order.indexOf(a)-order.indexOf(b))[0];};
+  // Jedes Wort hat zwei Karten. Der Balken in der Übersicht zählt Karten, deshalb zeigen wir hier beide.
+  const words=[...NOUNS.filter(n=>n.lvl===L).map(n=>({pl:n.pl,de:n.de,g:n.g,cards:[["DE→PL","n:"+n.id+":dp"],["PL→DE","n:"+n.id+":pd"]]})),
+    ...VERBS.filter(v=>v.lvl===L).map(v=>({pl:v.impf+" / "+v.pf,de:v.de,cards:[["Aspekt","v:"+v.id+":pair"],["Konj.","v:"+v.id+":conj"]]}))];
+  const chip=(m,lab)=>`<span class="chip" style="white-space:nowrap">${lab?`<span class="muted" style="font-size:11px">${lab}</span>`:""}<i class="dot mat-${m==="nw"?"new":m}" style="border:1px solid var(--line)"></i>${MAT_LABEL[m]}</span>`;
   const drills=cs.filter(c=>c.kind.startsWith("drill"));
+  const s=levelState(L);
+  const lock=s.reached||levelUnlocked(L)?"":" · noch gesperrt";
   return `<button class="btn ghost" data-act="lvlback" style="padding-left:0">← Kapitel</button>
-  <div><div class="label">${esc(CH.name)}</div><h1>Level ${L}</h1><p class="muted">${LEVEL_NOTE[L]}${levelUnlocked(L)?"":" · noch gesperrt"}</p></div>
-  <section class="panel"><h3>Wörter</h3><div class="list">${words.map(w=>{const m=worst(w.ids);return `<div class="it"><div><div class="wpl">${esc(w.pl)}</div><div class="small muted">${esc(w.de)} ${w.g?"· "+gtag(w.g):""}</div></div><span class="chip"><i class="dot mat-${m==="nw"?"new":m}" style="border:1px solid var(--line)"></i>${MAT_LABEL[m]}</span></div>`;}).join("")}</div></section>
-  <section class="panel"><h3>Grammatikaufgaben</h3><div class="list">${drills.map(c=>{const m=matOf(st(c.id));return `<div class="it"><div class="small" style="font-family:var(--font-display);font-size:15px">${esc(c.ref.q.replace("___","…"))}</div><span class="chip">${MAT_LABEL[m]}</span></div>`;}).join("")}</div></section>`;
+  <div><div class="label">${esc(CH.name)}</div><h1>Level ${L}</h1><p class="muted">${LEVEL_NOTE[L]}${lock}</p></div>
+  <section class="panel stack" style="gap:8px">${matBar(s.b,s.total)}<p class="small muted">${s.total} Karten: jedes Wort hat zwei, dazu die Grammatikaufgaben.</p></section>
+  <section class="panel"><h3>Wörter</h3><div class="list">${words.map(w=>`<div class="it" style="align-items:flex-start;gap:10px"><div style="min-width:0"><div class="wpl">${esc(w.pl)}</div><div class="small muted">${esc(w.de)} ${w.g?"· "+gtag(w.g):""}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">${w.cards.map(([lab,id])=>chip(matOf(st(id)),lab)).join("")}</div></div>`).join("")}</div></section>
+  <section class="panel"><h3>Grammatikaufgaben</h3><div class="list">${drills.map(c=>`<div class="it"><div class="small" style="font-family:var(--font-display);font-size:15px">${esc(c.ref.q.replace("___","…"))}</div>${chip(matOf(st(c.id)))}</div>`).join("")}</div></section>`;
 }
 
 /* ---------- Grammatik ---------- */
