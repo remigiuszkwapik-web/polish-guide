@@ -570,10 +570,30 @@ function buildQueue(){
     if(fresh.some(f=>f.sib===c.sib&&c.kind!=="verb_conj"))continue;
     fresh.push(c);
   }
-  const queue=due.map(c=>c.id).concat(fresh.map(c=>c.id));
+  const queue=mixQueue(due,fresh).map(c=>c.id);
   const goalNow=day.rev+day.nw+queue.length;
   if(goalNow>day.goal)day.goal=goalNow;
   return queue;
+}
+
+/**
+ * Reihenfolge in der Session: Wiederholungen zufällig, neue Karten gleichmäßig dazwischen.
+ * Sonst kämen zusammen gelernte Wörter jeden Tag in derselben Abfolge (gleiches Fälligkeitsdatum)
+ * und man lernt die Abfolge statt der Wörter. Neue Karten behalten untereinander ihre Reihenfolge.
+ * Zwei Karten desselben Worts (gleiches sib) stehen nie direkt hintereinander.
+ */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function mixQueue(due,fresh){
+  const rev=shuffle(due.slice()),out=[];
+  const gap=(rev.length+1)/(fresh.length+1);let r=0;
+  fresh.forEach((c,k)=>{const until=Math.round(gap*(k+1));while(r<until&&r<rev.length)out.push(rev[r++]);out.push(c);});
+  while(r<rev.length)out.push(rev[r++]);
+  for(let i=1;i<out.length;i++){
+    if(out[i].sib!==out[i-1].sib)continue;
+    const j=out.findIndex((c,k)=>k>i&&c.sib!==out[i-1].sib&&(k+1>=out.length||out[k+1].sib!==out[i].sib)&&out[k-1].sib!==out[i].sib);
+    if(j>0)[out[i],out[j]]=[out[j],out[i]];
+  }
+  return out;
 }
 
 /**
