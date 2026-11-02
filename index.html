@@ -525,7 +525,20 @@ function streak(){
 /* ---------- Karten-Status ---------- */
 const st=id=>S.cards[id];
 /** Level frei: erstes Level, oder Vorgänger erreicht, oder Einstiegstest deckt die Voraussetzungen ab */
-function levelUnlocked(L){const i=LEVELS.indexOf(L);if(i<=0)return true;if(S.passed>=LEVEL_STAGE[L]-1)return true;return levelState(LEVELS[i-1]).reached;}
+function levelUnlocked(L){const i=LEVELS.indexOf(L);if(i<=0)return true;if(S.passed>=LEVEL_STAGE[L]-1)return true;return levelDone(LEVELS[i-1]);}
+/** „Erreicht“ bleibt dauerhaft: einmal geschafft, immer geschafft. Wie fest die Karten gerade sitzen, zeigt nur der Balken. */
+function levelDone(L){return !!S.levelsSeen[L]||levelState(L).reached;}
+/** Erreichte Level merken. Hat ein späteres Level schon eingeführte Karten, war das frühere auch einmal erreicht (oder per Einstiegstest frei). */
+function syncReached(){
+  let ch=false;
+  LEVELS.forEach((L,i)=>{if(S.levelsSeen[L])return;
+    const M=LEVELS[i+1],viaTest=M&&S.passed>=LEVEL_STAGE[M]-1;
+    const later=M&&!viaTest&&CARDS.some(c=>c.lvl===M&&st(c.id)&&st(c.id).state);
+    if(levelState(L).reached||later){S.levelsSeen[L]=true;ch=true;}});
+  if(ch)save();
+}
+/** Das Level, aus dem gerade neue Karten kommen */
+function currentLevel(){return LEVELS.filter(levelUnlocked).find(L=>!levelDone(L))||LEVELS[LEVELS.length-1];}
 function levelState(L){
   const cs=CARDS.filter(c=>c.lvl===L);
   let seen=0,grad=0,mature=0;const b={nw:0,learn:0,young:0,mature:0};
@@ -535,7 +548,7 @@ function levelState(L){
 function matOf(x){if(!x||!x.state)return "nw";if(x.state===1||x.s<7)return "learn";if(x.s<21)return "young";return "mature";}
 const MAT_LABEL={nw:"neu",learn:"lernend",young:"jung",mature:"reif"};
 function wordsReached(){ // Level "erreicht" = Ganzzahl der erreichten Level im Kapitel
-  return LEVELS.filter(L=>levelState(L).reached).length;
+  return LEVELS.filter(levelDone).length;
 }
 
 /* ---------- Session-Warteschlange ---------- */
@@ -640,6 +653,7 @@ function render(){
   if(!S){return;}
   applySkin();
   if(!S.onboarded){if(!ONB)ONB={step:0};$app.innerHTML=renderOnb();bindKeys();return;}
+  syncReached();
   if(SESS){$app.innerHTML=renderSession();bindKeys();focusInput();return;}
   let body="";
   if(VIEW==="today")body=renderToday();
@@ -667,7 +681,7 @@ function renderToday(){
   const stepN=q.filter(id=>st(id)&&st(id).state&&!isReview(st(id))).length;
   const bk=brakeInfo();
   const newN=q.length-dueN-stepN;
-  const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||LEVELS[LEVELS.length-1];
+  const active=currentLevel();
   const ls=levelState(active);
   const mature=Object.values(S.cards).filter(x=>x.s>=21&&x.state===2).length;
   const wk=logStats(Date.now()-7*864e5);
@@ -707,13 +721,14 @@ function matBar(b,total){
 /* ---------- Kapitel ---------- */
 function renderChap(){
   if(LVLDETAIL)return renderLevelDetail(LVLDETAIL);
+  const cur=currentLevel();
   const lv=LEVELS.map(L=>{
-    const s=levelState(L),un=levelUnlocked(L);
-    const cls=s.mastered?"mastered":s.reached?"reached":un?"active":"";
-    const status=s.mastered?"gemeistert":s.reached?"erreicht":un?"aktiv":"gesperrt";
+    const s=levelState(L),un=levelUnlocked(L),done=levelDone(L);
+    const cls=s.mastered?"mastered":done?"reached":un?"active":"";
+    const status=s.mastered?"gemeistert":done?"erreicht":L===cur?"aktuell":un?"frei":"gesperrt";
     return `<div class="lvl"><div class="node ${cls}">${L}</div>
       <button class="lvlbtn" data-act="lvl" data-l="${L}" aria-label="Level ${L} öffnen"><div class="panel stack" style="gap:8px">
-        <div class="spread"><b>Level ${L}</b><span class="chip ${s.reached?"on":""}">${status}</span></div>
+        <div class="spread"><b>Level ${L}</b><span class="chip ${done?"on":""}">${status}</span></div>
         <p class="small muted">${LEVEL_NOTE[L]}</p>
         ${matBar(s.b,s.total)}
       </div></button></div>`;}).join("");
@@ -731,7 +746,7 @@ function renderLevelDetail(L){
   const chip=(m,lab)=>`<span class="chip" style="white-space:nowrap">${lab?`<span class="muted" style="font-size:11px">${lab}</span>`:""}<i class="dot mat-${m==="nw"?"new":m}" style="border:1px solid var(--line)"></i>${MAT_LABEL[m]}</span>`;
   const drills=cs.filter(c=>c.kind.startsWith("drill"));
   const s=levelState(L);
-  const lock=s.reached||levelUnlocked(L)?"":" · noch gesperrt";
+  const lock=levelDone(L)||levelUnlocked(L)?"":" · noch gesperrt";
   return `<button class="btn ghost" data-act="lvlback" style="padding-left:0">← Kapitel</button>
   <div><div class="label">${esc(CH.name)}</div><h1>Level ${L}</h1><p class="muted">${LEVEL_NOTE[L]}${lock}</p></div>
   <section class="panel stack" style="gap:8px">${matBar(s.b,s.total)}<p class="small muted">${s.total} Karten: jedes Wort hat zwei, dazu die Grammatikaufgaben.</p></section>
@@ -1006,7 +1021,7 @@ function rate(g){
 function renderSummary(){
   const ok=SESS.results.ok.length,bad=SESS.results.bad.length;
   const errs=Object.entries(SESS.ruleErr).sort((a,b)=>b[1]-a[1]);
-  const active=LEVELS.filter(levelUnlocked).filter(L=>!levelState(L).reached)[0]||LEVELS.at(-1);
+  const active=currentLevel();
   const ls=levelState(active);
   const sk=streak();
   return `<main>
