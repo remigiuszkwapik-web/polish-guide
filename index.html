@@ -841,7 +841,7 @@ function renderSettings(){
   return `<button class="btn ghost" data-act="tab" data-v="today" style="padding-left:0">← Heute</button>
   <h1>Einstellungen</h1>
   <section class="panel stack"><h3>Neue Karten pro Tag</h3><p class="small muted">Standard wie in Anki: 20.</p>
-    <div class="opts">${[10,15,20,30].map(n=>`<button data-act="npd" data-n="${n}" aria-pressed="${S.newPerDay===n}">${n}</button>`).join("")}</div></section>
+    <div class="opts">${[10,15,20,30,70,100].map(n=>`<button data-act="npd" data-n="${n}" aria-pressed="${S.newPerDay===n}">${n}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Neue Karten bei Rückstand bremsen</h3><p class="small muted">Sind viele Wiederholungen offen, kommen weniger neue Karten dazu. Ab dem Wert hier pausieren sie ganz, ab der Hälfte davon gibt es wieder die volle Menge.</p>
     <div class="opts">${[[0,"Aus"],[20,"20"],[30,"30"],[50,"50"]].map(([n,l])=>`<button data-act="blim" data-n="${n}" aria-pressed="${(S.backlogLimit||0)===n}">${l}</button>`).join("")}</div></section>
   <section class="panel stack"><h3>Aussehen</h3><p class="small muted">Klassisch oder im Stil von Bunzlauer Keramik. Dein Lernstand bleibt gleich.</p>
