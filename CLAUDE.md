@@ -6,7 +6,7 @@ Der Besitzer (Remi, UX-Designer) lernt täglich damit auf dem iPhone, als App au
 Produktkonzept mit Lernlogik, Entscheidungen und Roadmap: https://claude.ai/code/artifact/ca8796ac-813d-41a6-885a-4813fe5e7d70
 
 ## Aufbau
-- `index.html`: ganze App (Oberfläche, FSRS-5, Session-Logik), kein Build, keine Abhängigkeiten
+- `index.html`: ganze App (Oberfläche, FSRS-6, Session-Logik), kein Build, keine Abhängigkeiten
 - `content/grammar.js`: Grammatik-Leiter (10 Stufen), Stufen-Erklärungen, Regeln für „Warum?“, Einstiegstest
 - `content/kueche.js`: Kapitel 1, 10 Level. Neue Kapitel als eigene Datei nach diesem Muster, in `index.html` und `sw.js` eintragen
 - `sw.js`: Service Worker (Offline)
