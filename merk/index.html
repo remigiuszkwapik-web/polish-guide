@@ -375,9 +375,9 @@ function renderToday(){
   const day=today();
   const total=Object.keys(S.cards).length;
   const head=`<div class="spread"><div class="brand"><i></i>Merk</div><button class="btn ghost" data-act="tab" data-v="settings">Einstellungen</button></div>`;
-  if(!total)return head+`<section class="panel empty">
+  if(!total)return head+packPanel()+`<section class="panel empty">
     <h2>Deine Bibliothek ist leer</h2>
-    <p class="muted">Schick mir im Chat deine Notizen oder Markierungen zu einem Buch. Ich mache daraus Karten als JSON, die du unter Import einfügst.</p>
+    <p class="muted">Schick Claude im Chat deine Notizen oder Markierungen zu einem Buch. Die fertigen Karten erscheinen dann hier oben zum Übernehmen.</p>
     <button class="btn" data-act="tab" data-v="imp">Zum Import</button>
     <button class="btn ghost" data-act="demo">Beispielkarten ansehen</button>
   </section>`;
@@ -395,7 +395,7 @@ function renderToday(){
   const sv=savedSess();
   const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const x=S.days[dayKey(d)];days.push({n:x?x.rev+x.nw:0,lab:["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()]});}
   const mx=Math.max(1,...days.map(d=>d.n));
-  return head+`
+  return head+packPanel()+`
   <section class="hero">
     <div class="ring" role="img" aria-label="Heute ${doneN} von ${goal} Karten">
       <svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
@@ -474,6 +474,7 @@ Regeln: höchstens 10 Karten pro Kapitel. Eine Idee pro Karte. Lieber Warum- und
 function renderImport(){
   if(IMP&&IMP.groups)return renderPreview();
   return `<div><div class="label">Import</div><h1>Karten einfügen</h1></div>
+  ${packPanel()}
   <p class="muted">Schick mir im Chat Notizen, Markierungen oder Fotos von Buchseiten. Ich gebe dir die Karten als JSON zurück. Das fügst du hier ein und wählst aus, was rein soll.</p>
   <section class="panel stack">
     <div class="field"><label class="label" for="impText">JSON aus dem Chat</label>
@@ -505,6 +506,7 @@ function renderPreview(){
         <span class="t">${c.type==="cloze"?clozeHTML(c.text,-1,true):fmt(c.front)}</span>
         ${c.type!=="cloze"&&c.back?`<span class="small muted">${fmt(c.back)}</span>`:""}
         ${c.err?`<span class="small" style="color:var(--bad)">${esc(c.err)}</span>`:""}
+        ${c.dup&&!c.err?`<span class="small muted">Schon in deiner Bibliothek</span>`:""}
       </div></label>`).join("")}</div></section>`;}).join("")}
   <button class="btn" data-act="doimport" ${sel?"":"disabled"}>${sel} ${sel===1?"Karte":"Karten"} hinzufügen</button>`;
 }
@@ -521,8 +523,10 @@ function parseImport(text){
     if(!o||!o.source||!o.source.title||!Array.isArray(o.cards))throw new Error("Es fehlt „source.title“ oder die Liste „cards“.");
     const title=String(o.source.title).trim();
     const match=Object.values(S.sources).find(s=>s.title.toLowerCase()===title.toLowerCase());
+    const have=new Set(match?cardsOf(match.id).map(c=>c.type==="cloze"?c.text:c.front):[]);
     const cards=o.cards.map(c=>{
       const x={chapter:String(c.chapter||"").trim(),type:String(c.type||"qa").toLowerCase(),front:c.front||"",back:c.back||"",text:c.text||"",note:c.note||"",sel:true};
+      if(have.has(x.type==="cloze"?x.text:x.front)){x.dup=true;x.sel=false;}
       if(x.type==="frage")x.type="qa";
       if(!TYPE_LABEL[x.type])x.err="Unbekannter Kartentyp „"+x.type+"“.";
       else if(x.type==="cloze"&&!gapCount(x.text))x.err="Lückentext ohne {{Lücke}}.";
@@ -545,6 +549,7 @@ function makeCard(src,ch,type,f){
 let ORD=0;
 function doImport(){
   let n=0,lastSrc=null;
+  if(IMP.pack)(S.packs||(S.packs={}))[IMP.pack]=Date.now();
   IMP.groups.forEach(g=>{
     const chosen=g.cards.filter(c=>c.sel&&!c.err);if(!chosen.length)return;
     let id=g.match;
@@ -552,7 +557,7 @@ function doImport(){
     chosen.forEach(c=>{n+=makeCard(id,c.chapter,c.type,c);});
     lastSrc=id;
   });
-  IMP=null;save();toast(n+" Karten hinzugefügt");
+  IMP=null;save();toast(n+" "+(n===1?"Karte":"Karten")+" hinzugefügt");
   VIEW="lib";SRC=lastSrc;render();window.scrollTo(0,0);
 }
 const DEMO={source:{title:"Beispiel: Wie Erinnern funktioniert",author:"Merk",kind:"Thema"},cards:[
@@ -562,6 +567,36 @@ const DEMO={source:{title:"Beispiel: Wie Erinnern funktioniert",author:"Merk",ki
   {chapter:"Abrufen",type:"explain",front:"Erkläre in eigenen Worten, warum Abfragen mehr bringt als nochmal Lesen.",back:"Beim Abrufen muss das Gehirn die Information selbst rekonstruieren. Diese Anstrengung stärkt die Erinnerungsspur. Nochmal Lesen fühlt sich vertraut an, trainiert aber das Erinnern kaum."},
   {chapter:"Abrufen",type:"qa",front:"Warum sind Warum-Fragen oft bessere Karten als reine Fakten?",back:"Sie zwingen dich, Zusammenhänge herzustellen. Verknüpftes Wissen bleibt länger und lässt sich auf neue Situationen übertragen."}
 ]};
+
+/* ---------- Pakete: Karten, die Claude direkt ins Repo legt (merk/pakete/) ---------- */
+let PACKS=null;
+async function loadPacks(){
+  if(!/^https?:$/.test(location.protocol))return;
+  try{
+    const r=await fetch("pakete/index.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)return;
+    PACKS=await r.json();
+    if(!SESS&&!IMP)render();
+  }catch(e){/* offline: dann eben später */}
+}
+function newPacks(){return (PACKS||[]).filter(p=>!(S.packs&&S.packs[p.id]));}
+async function openPack(id){
+  const p=(PACKS||[]).find(x=>x.id===id);if(!p)return;
+  try{
+    const r=await fetch("pakete/"+p.file+"?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw 0;
+    const text=await r.text();
+    IMP={text,groups:parseImport(text),pack:id};VIEW="imp";SRC=null;render();window.scrollTo(0,0);
+  }catch(e){toast("Das Paket ließ sich nicht laden. Prüfe deine Internetverbindung.");}
+}
+function packPanel(){
+  const ps=newPacks();if(!ps.length)return "";
+  return `<section class="panel stack" style="border-color:var(--accent)">
+    <div class="label" style="color:var(--accent)">Neu aus dem Chat</div>
+    ${ps.map(p=>`<div class="stack" style="gap:8px"><b>${esc(p.title)}</b>
+      <div class="row"><button class="btn" data-act="pack" data-id="${esc(p.id)}" style="flex:2">Ansehen und übernehmen</button><button class="btn secondary" data-act="packhide" data-id="${esc(p.id)}" style="flex:1">Ausblenden</button></div></div>`).join("")}
+  </section>`;
+}
 
 /* ---------- Einstellungen ---------- */
 function renderSettings(){
@@ -824,6 +859,8 @@ document.addEventListener("click",e=>{
       render();window.scrollTo(0,0);break;}
     case "impback":IMP={text:IMP.text};render();break;
     case "doimport":doImport();break;
+    case "pack":openPack(el.dataset.id);break;
+    case "packhide":(S.packs||(S.packs={}))[el.dataset.id]=-1;save();render();toast("Ausgeblendet");break;
     case "copyprompt":copyText(PROMPT,"Anleitung kopiert");break;
     case "demo":IMP={text:JSON.stringify(DEMO,null,1),groups:parseImport(JSON.stringify(DEMO))};VIEW="imp";render();window.scrollTo(0,0);break;
     // Einstellungen
@@ -856,6 +893,7 @@ document.addEventListener("keydown",e=>{
 (function(){const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js";s.onload=()=>{if(SESS||!SHEET)render();else renderLayer();};document.head.appendChild(s);})();
 initStore();
 ORD=Object.keys(S.cards).length;
+loadPacks();
 if("serviceWorker" in navigator&&location.protocol==="https:"){
   window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});
 }

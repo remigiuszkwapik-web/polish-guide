@@ -1,7 +1,7 @@
 // Merk Service Worker: App offline verfügbar machen.
 // Bei jeder Änderung an merk/index.html o. Ä. VERSION hochzählen, damit Geräte die neue Fassung laden.
 // Alle Caches beginnen mit "merk-", damit sie sich nicht mit Kroks Caches (krok-…) in die Quere kommen.
-const VERSION = "merk-v1";
+const VERSION = "merk-v2";
 const EXTERN = "merk-extern"; // Schriften und KaTeX
 const SHELL = [
   "./",
