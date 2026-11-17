@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Merk Wissensbibliothek</title>
+<meta name="theme-color" content="#1f6a5a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Merk">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Ein-Spalten-App fürs Handy, Tab-Leiste unten. Motiv: Lesezeichenband. */
+:root{
+  --bg:#f5f2ec; --surface:#fffdf9; --surface-2:#ebe6dc; --line:#d9d2c4;
+  --ink:#1e1c19; --muted:#655f55; --faint:#958d80;
+  --accent:#1f6a5a; --accent-soft:#d8ebe5;
+  --amber:#b0670d; --amber-soft:#f5e3c8;
+  --good:#2f7d4f; --bad:#b23a3a;
+  --r-again:#b23a3a; --r-hard:#b0670d; --r-good:#2f7d4f; --r-easy:#1f6a5a;
+  --font-display:"Literata",Georgia,serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --radius:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#151413; --surface:#1e1c1a; --surface-2:#292624; --line:#3a3633;
+  --ink:#ece8e1; --muted:#aaa397; --faint:#7d766c;
+  --accent:#6fc2ad; --accent-soft:#1f3832;
+  --amber:#e3a34f; --amber-soft:#3b2c17;
+  --good:#6cc08d; --bad:#ec7f7f;
+  --r-again:#ec7f7f; --r-hard:#e3a34f; --r-good:#6cc08d; --r-easy:#6fc2ad;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;padding-top:env(safe-area-inset-top,0px)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.app{max-width:540px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-inline:16px}
+main{flex:1;padding-block:16px 100px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:28px}h2{font-size:21px}h3{font-size:17px}
+p{margin:0}
+.muted{color:var(--muted)}.small{font-size:13px}
+.label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.row{display:flex;gap:12px;align-items:center}
+.stack{display:flex;flex-direction:column;gap:12px}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:600;background:var(--ink);color:var(--bg);width:100%;font-size:16px}
+.btn.secondary{background:var(--surface-2);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--accent);padding:10px 12px;width:auto}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--surface-2);font-size:12.5px;font-weight:500;white-space:nowrap;border:0}
+.chip.on{background:var(--accent);color:var(--surface)}
+.chip.warn{background:var(--amber-soft);color:var(--amber)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+/* Tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tabs nav{max-width:540px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tabs button{background:none;border:0;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;color:var(--muted)}
+.tabs button[aria-current="page"]{color:var(--accent);font-weight:600}
+.tabs svg{width:22px;height:22px}
+/* Heute */
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px}
+.brand i{width:14px;height:24px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);display:inline-block}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.ring{width:112px;height:112px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .num b{font-family:var(--font-display);font-size:26px;line-height:1}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{font-family:var(--font-display);font-size:22px;display:block;line-height:1.1}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.mat-new{background:var(--surface-2)}.mat-learn{background:var(--amber)}.mat-young{background:color-mix(in srgb,var(--accent) 50%,var(--surface-2))}.mat-mature{background:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.weeks{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:80px}
+.weeks div{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.weeks span{width:100%;border-radius:5px 5px 2px 2px;background:var(--accent);min-height:2px}
+.weeks small{font-size:11px;color:var(--muted)}
+/* Bibliothek */
+.src{all:unset;cursor:pointer;display:block}
+.src .panel{display:flex;flex-direction:column;gap:8px}
+.kind{font-size:11.5px;color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.list{display:flex;flex-direction:column}
+.list .it{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list .it:last-child{border-bottom:0}
+.cardrow{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);width:100%}
+.cardrow:last-child{border-bottom:0}
+.cardrow .t{font-family:var(--font-display);font-size:15.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.susp{opacity:.5}
+/* Session */
+.sessbar{display:flex;align-items:center;gap:12px}
+.sessbar .bar{flex:1}
+.closebtn{background:none;border:0;padding:6px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 20px 24px;display:flex;flex-direction:column;gap:16px;position:relative;min-height:280px}
+.card::before{content:"";position:absolute;right:22px;top:-1px;width:14px;height:30px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%)}
+.ctype{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-right:30px}
+.prompt{font-family:var(--font-display);font-size:23px;line-height:1.35;font-weight:600;overflow-wrap:break-word;hyphens:auto}
+.answer{font-family:var(--font-display);font-size:19px;line-height:1.45;overflow-wrap:anywhere}
+.divider{border-top:1px dashed var(--line)}
+.gap{display:inline-block;min-width:3em;border-bottom:2px solid var(--ink);text-align:center;color:var(--muted);padding:0 4px}
+.gap.on{color:var(--accent);border-color:var(--accent)}
+.note{font-size:14px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.yours{font-size:15px;background:var(--bg);border-radius:10px;padding:10px 12px;white-space:pre-wrap}
+.src-line{font-size:12.5px;color:var(--muted)}
+math{font-size:1.08em}
+math[display="block"]{margin:.4em 0}
+code.tex{font-family:var(--font-mono);font-size:.85em;background:var(--surface-2);padding:1px 4px;border-radius:4px}
+.rates{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rates button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600;font-size:14px}
+.rates button small{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);font-weight:500}
+.rates button[data-g="1"]{color:var(--r-again)}.rates button[data-g="2"]{color:var(--r-hard)}.rates button[data-g="3"]{color:var(--r-good)}.rates button[data-g="4"]{color:var(--r-easy)}
+textarea,input[type=text],select{width:100%;font-family:var(--font-body);font-size:15px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:10px 12px}
+textarea{min-height:110px;resize:vertical}
+textarea.code{font-family:var(--font-mono);font-size:12px;min-height:150px}
+.field{display:flex;flex-direction:column;gap:6px}
+/* Sheet */
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,#000 40%,transparent);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:540px;border-radius:20px 20px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:88%;overflow:auto;animation:up .22s ease-out}
+.sheet .grab{width:40px;height:4px;border-radius:4px;background:var(--line);align-self:center}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+/* Verlauf */
+.hist{display:flex;flex-direction:column}
+.hist div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hist div:last-child{border-bottom:0}
+.g1{color:var(--r-again)}.g2{color:var(--r-hard)}.g3{color:var(--r-good)}.g4{color:var(--r-easy)}
+.ivchart{display:flex;align-items:flex-end;gap:4px;height:70px}
+.ivchart span{flex:1;border-radius:4px 4px 1px 1px;min-height:3px}
+/* Import */
+.prev{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.prev:last-child{border-bottom:0}
+.prev input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.prev .t{font-family:var(--font-display);font-size:15px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opts button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600}
+.opts button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--surface)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;max-width:90%}
+.empty{text-align:center;padding:28px 12px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.syncnote{font-size:12px;color:var(--faint);text-align:center}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"><main><p class="muted">Lade …</p></main></div>
+<div id="layer"></div>
+<script>
+"use strict";
+/* ============================================================
+   FSRS-6 (Standardparameter wie in Anki 25.x / py-fsrs 6)
+   ============================================================ */
+const W=[0.212,1.2931,2.3065,8.2956,6.4133,0.8334,3.0194,0.001,1.8722,0.1666,0.796,1.4835,0.0614,0.2629,1.6483,0.6014,1.8729,0.5425,0.0912,0.0658,0.1542];
+const DECAY=-W[20], FACTOR=Math.pow(0.9,1/DECAY)-1, DAY=864e5, MIN=6e4, MAX_IV=3650;
+const clampD=d=>Math.min(10,Math.max(1,d));
+const D0=g=>clampD(W[4]-Math.exp(W[5]*(g-1))+1);
+const retr=(t,s)=>Math.pow(1+FACTOR*t/s,DECAY);
+function nextD(d,g){const dd=-W[6]*(g-3);const lin=d+dd*(10-d)/9;return clampD(W[7]*D0(4)+(1-W[7])*lin);}
+function sRecall(d,s,r,g){return s*(1+Math.exp(W[8])*(11-d)*Math.pow(s,-W[9])*(Math.exp(W[10]*(1-r))-1)*(g===2?W[15]:1)*(g===4?W[16]:1));}
+function sForget(d,s,r){const lt=W[11]*Math.pow(d,-W[12])*(Math.pow(s+1,W[13])-1)*Math.exp(W[14]*(1-r));const st=s/Math.exp(W[17]*W[18]);return Math.min(lt,st);}
+function sShort(s,g){let inc=Math.exp(W[17]*(g-3+W[18]))*Math.pow(s,-W[19]);if(g>=3)inc=Math.max(inc,1);return s*inc;}
+/** Ergebnis für alle vier Bewertungen, Intervall in ms. Zielbehalten 90 %: Intervall = Stabilität. */
+function fsrsPreview(x,now){
+  const out={};
+  for(const g of [1,2,3,4]){
+    let s,d;
+    if(!x||!x.state){s=W[g-1];d=D0(g);}
+    else{
+      const t=Math.max(0,(now-x.last)/DAY);
+      d=nextD(x.d,g);
+      if(t<1)s=sShort(x.s,g);
+      else{const r=retr(t,x.s);s=g===1?sForget(x.d,x.s,r):sRecall(x.d,x.s,r,g);}
+    }
+    s=Math.min(36500,Math.max(0.01,s));
+    out[g]={s,d,days:g===1?0:Math.min(MAX_IV,Math.max(1,Math.round(s)))};
+  }
+  if(x&&x.state&&out[3].days<=out[2].days)out[3].days=out[2].days+1;
+  if(out[4].days<=out[3].days)out[4].days=out[3].days+1;
+  for(const g of [1,2,3,4])out[g].ms=g===1?MIN:out[g].days*DAY;
+  return out;
+}
+function fmtIv(ms){
+  if(ms<DAY){const m=Math.round(ms/MIN);return m<60?m+" Min":Math.round(m/60)+" Std";}
+  const d=Math.round(ms/DAY);
+  if(d<30)return d+" T";
+  if(d<365)return String(Math.round(d/3)/10).replace(".",",")+" Mo";
+  return String(Math.round(d/36.5)/10).replace(".",",")+" J";
+}
+
+/* ============================================================
+   ZUSTAND & SPEICHERN
+   ============================================================ */
+const KEY="merk-state-v1";
+let S=null,docRef=null,saveTimer=null,saving=Promise.resolve(),syncMode="local";
+function fresh(){return {v:1,savedAt:0,newPerDay:10,chLimit:10,sources:{},cards:{},st:{},log:[],days:{},firstDay:null,sess:null};}
+function lsGet(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null;}catch(e){return null;}}
+function lsSet(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){
+  S.savedAt=Date.now();lsSet();
+  if(!docRef)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const json=JSON.stringify(S),at=S.savedAt;
+    saving=saving.then(()=>docRef.set({json,savedAt:at})).catch(e=>{
+      if(e&&e.code==="quota_exceeded")toast("Speicher voll. Exportiere ein Backup in den Einstellungen.");
+    });
+  },1200);
+}
+async function initStore(){
+  S=Object.assign(fresh(),lsGet()||{});
+  render();
+  try{
+    if(!window.claude||!window.claude.use)return;
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    if(!db||!user)return;
+    const uid=await user.id();
+    if(!uid)return;
+    docRef=db.doc("data/users/"+uid+"/merk");
+    const snap=await docRef.get();
+    if(snap.exists){
+      let r=null;try{r=JSON.parse(snap.data().json);}catch(e){}
+      if(r&&(r.savedAt||0)>=(S.savedAt||0)){S=Object.assign(fresh(),r);lsSet();}
+      else if(S.savedAt)save();
+    }else if(S.savedAt)save();
+    syncMode="account";
+    if(!SESS)render();
+  }catch(e){/* bleibt lokal */}
+}
+
+/* ---------- Hilfen ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const dayKey=(t=Date.now())=>{const d=new Date(t);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());};
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+function today(){const k=dayKey();if(!S.days[k])S.days[k]={rev:0,nw:0,goal:0,done:false};if(!S.firstDay)S.firstDay=k;return S.days[k];}
+function mondayKey(d){const t=new Date(d);t.setDate(t.getDate()-((t.getDay()+6)%7));return dayKey(t);}
+/** Streak: Tage mit Lernen; ein verpasster Tag pro Woche ist frei */
+function streak(){
+  if(!S.firstDay)return 0;
+  const d=new Date();d.setHours(12,0,0,0);
+  const t=S.days[dayKey(d)];
+  if(!(t&&(t.rev+t.nw)))d.setDate(d.getDate()-1);
+  let n=0;const used={};
+  for(let i=0;i<4000;i++){
+    const k=dayKey(d);if(k<S.firstDay)break;
+    const x=S.days[k];
+    if(x&&(x.rev+x.nw))n++;
+    else{const w=mondayKey(d);if(used[w])break;used[w]=true;}
+    d.setDate(d.getDate()-1);
+  }
+  return n;
+}
+
+/* ---------- Text, Formeln, Lückentext ---------- */
+function mathHTML(m){
+  if(window.katex){try{return katex.renderToString(m.tex,{output:"mathml",displayMode:m.disp,throwOnError:false});}catch(e){}}
+  return '<code class="tex">'+esc(m.tex)+"</code>";
+}
+/** Formatiert Text: $$Formel$$, $Formel$, **fett**, Zeilenumbrüche */
+function fmt(s){
+  s=String(s==null?"":s);
+  const math=[];
+  s=s.replace(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g,(m,a,b)=>{math.push({tex:a!=null?a:b,disp:a!=null});return "\u0001"+(math.length-1)+"\u0001";});
+  let h=esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>");
+  return h.replace(/\u0001(\d+)\u0001/g,(m,i)=>mathHTML(math[+i]));
+}
+const GAP_RE=/\{\{([\s\S]+?)\}\}/g;
+function gapCount(t){return (String(t||"").match(GAP_RE)||[]).length;}
+function clozeHTML(text,k,shown){
+  const out=[];let last=0,i=0;
+  String(text).replace(GAP_RE,(m,inner,off)=>{
+    out.push(fmt(text.slice(last,off)));
+    const [a,hint]=inner.split("::");
+    if(i===k)out.push(shown?`<span class="gap on">${fmt(a)}</span>`:`<span class="gap">${hint?esc(hint):"…"}</span>`);
+    else out.push(fmt(a));
+    i++;last=off+m.length;return m;
+  });
+  out.push(fmt(text.slice(last)));
+  return out.join("");
+}
+function plain(c){
+  if(c.type==="cloze"){let i=0;return c.text.replace(GAP_RE,(m,inner)=>i++===c.k?"[…]":inner.split("::")[0]);}
+  return c.front;
+}
+
+/* ---------- Karten-Status ---------- */
+const st=id=>S.st[id];
+function matOf(x){if(!x||!x.state)return "nw";if(x.state===1||x.s<7)return "learn";if(x.s<21)return "young";return "mature";}
+const MAT_LABEL={nw:"neu",learn:"lernend",young:"jung",mature:"reif"};
+const TYPE_LABEL={qa:"Frage",cloze:"Lückentext",explain:"In eigenen Worten"};
+const KINDS=["Buch","Kurs","Artikel","Thema","Podcast"];
+function cardsOf(srcId){return Object.values(S.cards).filter(c=>c.src===srcId);}
+function matCounts(cards){const b={nw:0,learn:0,young:0,mature:0};cards.forEach(c=>b[matOf(st(c.id))]++);return b;}
+function matBar(b,total,legend=true){
+  const w=k=>(b[k]/Math.max(1,total)*100).toFixed(1)+"%";
+  return `<div class="bar" role="img" aria-label="${b.mature} reif, ${b.young} jung, ${b.learn} lernend, ${b.nw} neu"><span class="mat-mature" style="width:${w("mature")}"></span><span class="mat-young" style="width:${w("young")}"></span><span class="mat-learn" style="width:${w("learn")}"></span></div>
+  ${legend?`<div class="legend"><span><i class="mat-mature"></i>reif ${b.mature}</span><span><i class="mat-young"></i>jung ${b.young}</span><span><i class="mat-learn"></i>lernend ${b.learn}</span><span><i class="mat-new" style="border:1px solid var(--line)"></i>neu ${b.nw}</span></div>`:""}`;
+}
+
+/* ---------- Warteschlange ---------- */
+const rNow=(x,now)=>retr(Math.max(0,(now-x.last)/DAY),x.s);
+/** Rückstand-Bremse: viele überfällige Wiederholungen → weniger oder keine neuen Karten */
+function brake(){
+  if(S.brake===false)return {n:0,f:1};
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const n=Object.values(S.cards).filter(c=>!c.susp&&S.st[c.id]&&S.st[c.id].state===2&&S.st[c.id].due<t0.getTime()).length;
+  const lim=S.newPerDay;
+  return {n,f:n>2*lim?0:n>lim?0.5:1};
+}
+function buildQueue(filter){
+  const now=Date.now(),day=today();
+  const pool=Object.values(S.cards).filter(c=>!c.susp&&(!filter||c.src===filter));
+  const due=pool.filter(c=>st(c.id)&&st(c.id).state&&st(c.id).due<=now+60*MIN).sort((a,b)=>rNow(st(a.id),now)-rNow(st(b.id),now)); // am meisten gefährdet zuerst
+  const left=Math.floor(Math.max(0,S.newPerDay-day.nw)*brake().f);
+  const tk=dayKey();
+  const grpToday=new Set(Object.values(S.cards).filter(c=>st(c.id)&&st(c.id).intro===tk&&c.grp).map(c=>c.grp));
+  const fresh=[];
+  const news=pool.filter(c=>!st(c.id)||!st(c.id).state).sort((a,b)=>a.created-b.created||a.ord-b.ord);
+  for(const c of news){
+    if(fresh.length>=left)break;
+    if(c.grp&&(grpToday.has(c.grp)||fresh.some(f=>f.grp===c.grp)))continue; // Lücken desselben Satzes nicht am selben Tag
+    fresh.push(c);
+  }
+  // neue Karten zwischen die Wiederholungen mischen
+  const q=[];let i=0,j=0;
+  while(i<due.length||j<fresh.length){for(let k=0;k<3&&i<due.length;k++)q.push(due[i++].id);if(j<fresh.length)q.push(fresh[j++].id);}
+  return q;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+let VIEW="today",SRC=null,SHEET=null,IMP=null,ADD=null,SESS=null,FILTER=null;
+const $app=document.getElementById("app"),$layer=document.getElementById("layer");
+const ICONS={
+  today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  lib:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4v16H5zM10 4h4v16h-4z"/><path d="M15.5 5.2l3.6-1 3 15.2-3.6 1z" transform="translate(-2 0)"/></svg>',
+  imp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19h14"/></svg>'
+};
+function render(){
+  if(!S)return;
+  if(SESS){$app.innerHTML=renderSession();renderLayer();afterRender();return;}
+  let body="";
+  if(VIEW==="today")body=renderToday();
+  else if(VIEW==="lib")body=SRC?renderSource(SRC):renderLib();
+  else if(VIEW==="imp")body=renderImport();
+  else if(VIEW==="settings")body=renderSettings();
+  $app.innerHTML=`<main>${body}</main>${renderTabs()}`;
+  renderLayer();afterRender();
+}
+function renderTabs(){
+  const t=[["today","Heute"],["lib","Bibliothek"],["imp","Import"]];
+  return `<div class="tabs"><nav>${t.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${VIEW===k?'aria-current="page"':""}>${ICONS[k]}${l}</button>`).join("")}</nav></div>`;
+}
+function afterRender(){
+  const i=document.getElementById("yours");
+  if(i&&SESS&&SESS.phase==="ask"&&!SHEET){try{i.focus({preventScroll:true});}catch(e){}}
+}
+
+/* ---------- Heute ---------- */
+function renderToday(){
+  const day=today();
+  const total=Object.keys(S.cards).length;
+  const head=`<div class="spread"><div class="brand"><i></i>Merk</div><button class="btn ghost" data-act="tab" data-v="settings">Einstellungen</button></div>`;
+  if(!total)return head+`<section class="panel empty">
+    <h2>Deine Bibliothek ist leer</h2>
+    <p class="muted">Schick mir im Chat deine Notizen oder Markierungen zu einem Buch. Ich mache daraus Karten als JSON, die du unter Import einfügst.</p>
+    <button class="btn" data-act="tab" data-v="imp">Zum Import</button>
+    <button class="btn ghost" data-act="demo">Beispielkarten ansehen</button>
+  </section>`;
+  const qAll=buildQueue(null);
+  const q=FILTER?buildQueue(FILTER):qAll;
+  const doneN=day.rev+day.nw;
+  const goal=Math.max(doneN+qAll.length,1);
+  const pct=Math.min(1,doneN/goal);
+  const C=2*Math.PI*48;
+  const dueN=q.filter(id=>st(id)&&st(id).state).length;
+  const newN=q.length-dueN;
+  const all=Object.values(S.cards);
+  const mature=all.filter(c=>matOf(st(c.id))==="mature").length;
+  const srcs=Object.values(S.sources).sort((a,b)=>a.title.localeCompare(b.title));
+  const sv=savedSess();
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const x=S.days[dayKey(d)];days.push({n:x?x.rev+x.nw:0,lab:["So","Mo","Di","Mi","Do","Fr","Sa"][d.getDay()]});}
+  const mx=Math.max(1,...days.map(d=>d.n));
+  return head+`
+  <section class="hero">
+    <div class="ring" role="img" aria-label="Heute ${doneN} von ${goal} Karten">
+      <svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
+      <circle cx="56" cy="56" r="48" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}"/></svg>
+      <div class="num"><b class="mono">${doneN}</b><span class="small muted">von ${goal}</span></div>
+    </div>
+    <div class="stack" style="gap:6px">
+      <h1>${q.length?"Heute dran":doneN?"Für heute geschafft":"Nichts fällig"}</h1>
+      <p class="muted">${q.length?`${dueN} Wiederholungen · ${newN} neue Karten`:"Morgen warten neue Wiederholungen."}</p>
+      ${(()=>{const b=brake();return b.f<1?`<p class="small" style="color:var(--amber)">Rückstand-Bremse: ${b.n} überfällig, darum ${b.f?"nur halb so viele":"keine"} neuen Karten.</p>`:"";})()}
+    </div>
+  </section>
+  ${srcs.length>1?`<div class="chips" role="group" aria-label="Quelle wählen"><button class="chip ${!FILTER?"on":""}" data-act="filter" data-id="">Alle</button>${srcs.map(s=>`<button class="chip ${FILTER===s.id?"on":""}" data-act="filter" data-id="${s.id}">${esc(s.title)}</button>`).join("")}</div>`:""}
+  ${sv?`<button class="btn" data-act="start">Session fortsetzen (${sv.done.length} / ${sv.total})</button>`
+     :q.length?`<button class="btn" data-act="start">Session starten</button>`:`<button class="btn secondary" disabled>Keine Karten fällig</button>`}
+  <div class="stats3">
+    <div class="stat"><b class="mono">${streak()}</b><span class="small muted">Tage Streak</span></div>
+    <div class="stat"><b class="mono">${mature}</b><span class="small muted">reife Karten</span></div>
+    <div class="stat"><b class="mono">${srcs.length}</b><span class="small muted">${srcs.length===1?"Quelle":"Quellen"}</span></div>
+  </div>
+  <section class="panel stack"><h3>Wie fest alles sitzt</h3>${matBar(matCounts(all),all.length)}
+    <p class="small muted">Reif heißt: Die nächste Wiederholung liegt mindestens 21 Tage entfernt.</p></section>
+  <section class="panel stack"><h3>Letzte 7 Tage</h3>
+    <div class="weeks">${days.map(d=>`<div><small class="mono">${d.n||""}</small><span style="height:${d.n/mx*56}px"></span><small>${d.lab}</small></div>`).join("")}</div></section>
+  <p class="syncnote">${syncMode==="account"?"Deine Bibliothek wird in deinem Konto gespeichert.":"Deine Bibliothek wird auf diesem Gerät gespeichert. Sichere sie ab und zu über Einstellungen → Backup."}</p>`;
+}
+
+/* ---------- Bibliothek ---------- */
+function renderLib(){
+  const srcs=Object.values(S.sources).sort((a,b)=>b.created-a.created);
+  if(!srcs.length)return `<div><div class="label">Bibliothek</div><h1>Deine Quellen</h1></div>
+    <section class="panel empty"><p class="muted">Noch keine Quellen. Lege eine an oder importiere Karten.</p>
+    <button class="btn" data-act="tab" data-v="imp">Zum Import</button><button class="btn secondary" data-act="newsrc">Quelle anlegen</button></section>`;
+  return `<div class="spread"><div><div class="label">Bibliothek</div><h1>Deine Quellen</h1></div><button class="btn ghost" data-act="newsrc">+ Quelle</button></div>
+  ${srcs.map(s=>{const cs=cardsOf(s.id);const due=cs.filter(c=>!c.susp&&st(c.id)&&st(c.id).state&&st(c.id).due<=Date.now()).length;
+    return `<button class="src" data-act="opensrc" data-id="${s.id}"><div class="panel">
+      <div class="spread"><span class="kind">${esc(s.kind||"Buch")}</span>${due?`<span class="chip on">${due} fällig</span>`:""}</div>
+      <h3>${esc(s.title)}</h3>${s.author?`<p class="small muted">${esc(s.author)}</p>`:""}
+      ${matBar(matCounts(cs),cs.length,false)}
+      <p class="small muted">${cs.length} Karten · ${new Set(cs.map(c=>c.ch||"")).size} ${new Set(cs.map(c=>c.ch||"")).size===1?"Kapitel":"Kapitel"}</p>
+    </div></button>`;}).join("")}`;
+}
+function renderSource(id){
+  const s=S.sources[id];if(!s){SRC=null;return renderLib();}
+  const cs=cardsOf(id).sort((a,b)=>a.created-b.created||a.ord-b.ord);
+  const chs=[];cs.forEach(c=>{const k=c.ch||"Ohne Kapitel";let g=chs.find(x=>x.k===k);if(!g){g={k,cs:[]};chs.push(g);}g.cs.push(c);});
+  const q=buildQueue(id);
+  return `<button class="btn ghost" data-act="libback" style="padding-left:0;align-self:flex-start">← Bibliothek</button>
+  <div class="stack" style="gap:4px"><span class="kind">${esc(s.kind||"Buch")}</span><h1>${esc(s.title)}</h1>${s.author?`<p class="muted">${esc(s.author)}</p>`:""}</div>
+  <section class="panel stack">${matBar(matCounts(cs),cs.length)}
+    <button class="btn" data-act="startsrc" data-id="${id}" ${q.length?"":"disabled"}>${q.length?`Nur diese Quelle lernen (${q.length})`:"Hier ist gerade nichts fällig"}</button></section>
+  ${s.note?`<section class="panel"><div class="label">Notiz</div><p>${fmt(s.note)}</p></section>`:""}
+  ${chs.map(g=>{const over=g.cs.length>S.chLimit;return `<section class="panel stack" style="gap:4px">
+    <div class="spread"><h3>${esc(g.k)}</h3><span class="chip ${over?"warn":""}">${g.cs.length}${over?" / "+S.chLimit:""}</span></div>
+    <div class="list">${g.cs.map(c=>{const m=matOf(st(c.id));return `<button class="cardrow ${c.susp?"susp":""}" data-act="card" data-id="${c.id}">
+      <div class="stack" style="gap:2px;min-width:0"><span class="small muted">${TYPE_LABEL[c.type]}${c.susp?" · pausiert":""}</span><span class="t">${esc(plain(c))}</span></div>
+      <span class="chip"><i class="dot mat-${m==="nw"?"new":m}" style="border:1px solid var(--line)"></i>${MAT_LABEL[m]}</span></button>`;}).join("")}</div></section>`;}).join("")}
+  <button class="btn secondary" data-act="addcard" data-id="${id}">Karte hinzufügen</button>
+  <section class="panel stack"><h3>Quelle verwalten</h3>
+    <button class="btn secondary" data-act="editsrc" data-id="${id}">Titel und Autor bearbeiten</button>
+    <button class="btn secondary" data-act="delsrc1" style="color:var(--bad)">Quelle mit allen Karten löschen</button>
+    <div id="delsrc" hidden class="stack"><p class="small"><b>Wirklich löschen?</b> ${cs.length} Karten und ihr Verlauf gehen verloren.</p>
+      <div class="row"><button class="btn secondary" data-act="delsrc0">Abbrechen</button><button class="btn danger" data-act="delsrc2" data-id="${id}">Löschen</button></div></div>
+  </section>`;
+}
+
+/* ---------- Import ---------- */
+const PROMPT=`Erstelle Lernkarten für meine App „Merk“ als JSON in genau diesem Format:
+{"source":{"title":"Buchtitel","author":"Autor","kind":"Buch"},
+ "cards":[
+  {"chapter":"Kapitel 1","type":"qa","front":"Frage","back":"Antwort","note":"optionaler Kontext"},
+  {"chapter":"Kapitel 1","type":"cloze","text":"Satz mit {{Lücke}} oder {{Lücke::Hinweis}}"},
+  {"chapter":"Kapitel 2","type":"explain","front":"Erkläre in eigenen Worten, warum …","back":"Musterantwort"}
+ ]}
+Regeln: höchstens 10 Karten pro Kapitel. Eine Idee pro Karte. Lieber Warum- und Wie-Fragen als reine Fakten. Formeln in LaTeX zwischen $…$ oder $$…$$. Gib nur das JSON aus.`;
+function renderImport(){
+  if(IMP&&IMP.groups)return renderPreview();
+  return `<div><div class="label">Import</div><h1>Karten einfügen</h1></div>
+  <p class="muted">Schick mir im Chat Notizen, Markierungen oder Fotos von Buchseiten. Ich gebe dir die Karten als JSON zurück. Das fügst du hier ein und wählst aus, was rein soll.</p>
+  <section class="panel stack">
+    <div class="field"><label class="label" for="impText">JSON aus dem Chat</label>
+    <textarea id="impText" class="code" placeholder='{"source":{"title":"…"},"cards":[…]}'>${esc(IMP&&IMP.text||"")}</textarea></div>
+    ${IMP&&IMP.err?`<p class="small" style="color:var(--bad)">${esc(IMP.err)}</p>`:""}
+    <button class="btn" data-act="parse">Vorschau anzeigen</button>
+  </section>
+  <section class="panel stack"><h3>Anleitung für Claude</h3>
+    <p class="small muted">Falls du die Karten in einem anderen Chat erstellen lässt: Kopiere diesen Text dazu, dann stimmt das Format.</p>
+    <button class="btn secondary" data-act="copyprompt">Anleitung kopieren</button></section>`;
+}
+function renderPreview(){
+  const gs=IMP.groups;
+  const sel=gs.reduce((a,g)=>a+g.cards.filter(c=>c.sel&&!c.err).reduce((b,c)=>b+(c.type==="cloze"?gapCount(c.text):1),0),0);
+  return `<button class="btn ghost" data-act="impback" style="padding-left:0;align-self:flex-start">← Zurück zum Text</button>
+  <div><div class="label">Vorschau</div><h1>Was soll rein?</h1></div>
+  ${gs.map((g,gi)=>{
+    const chs={};g.cards.forEach(c=>{if(c.sel&&!c.err){const k=c.chapter||"Ohne Kapitel";chs[k]=(chs[k]||0)+1;}});
+    const over=Object.entries(chs).filter(([k,n])=>n>S.chLimit);
+    return `<section class="panel stack" style="gap:6px">
+    <span class="kind">${esc(g.src.kind||"Buch")}</span><h2>${esc(g.src.title)}</h2>
+    <p class="small muted">${g.match?"Kommt zur vorhandenen Quelle dazu.":"Wird als neue Quelle angelegt."}${g.src.author?" · "+esc(g.src.author):""}</p>
+    ${over.length?`<p class="small" style="color:var(--amber)">Mehr als ${S.chLimit} Karten in ${over.map(([k,n])=>`„${esc(k)}“ (${n})`).join(", ")}. Lieber nur die wichtigsten behalten, sonst wird der tägliche Stapel zäh.</p>`:""}
+    <div class="row" style="gap:6px"><button class="chip" data-act="selall" data-g="${gi}" data-v="1">alle</button><button class="chip" data-act="selall" data-g="${gi}" data-v="0">keine</button></div>
+    <div>${g.cards.map((c,ci)=>`<label class="prev">
+      <input type="checkbox" data-act="sel" data-g="${gi}" data-c="${ci}" ${c.sel&&!c.err?"checked":""} ${c.err?"disabled":""}>
+      <div class="stack" style="gap:2px;min-width:0">
+        <span class="small muted">${esc(c.chapter||"Ohne Kapitel")} · ${TYPE_LABEL[c.type]||"?"}${c.type==="cloze"&&gapCount(c.text)>1?" · "+gapCount(c.text)+" Lücken":""}</span>
+        <span class="t">${c.type==="cloze"?clozeHTML(c.text,-1,true):fmt(c.front)}</span>
+        ${c.type!=="cloze"&&c.back?`<span class="small muted">${fmt(c.back)}</span>`:""}
+        ${c.err?`<span class="small" style="color:var(--bad)">${esc(c.err)}</span>`:""}
+      </div></label>`).join("")}</div></section>`;}).join("")}
+  <button class="btn" data-act="doimport" ${sel?"":"disabled"}>${sel} ${sel===1?"Karte":"Karten"} hinzufügen</button>`;
+}
+function extractJSON(t){
+  t=String(t||"").trim().replace(/^```[a-z]*\s*/i,"").replace(/```\s*$/,"").trim();
+  const a=t.search(/[\[{]/);if(a>0)t=t.slice(a);
+  return t;
+}
+function parseImport(text){
+  let j;
+  try{j=JSON.parse(extractJSON(text));}catch(e){throw new Error("Das ist kein gültiges JSON. Kopiere den Codeblock aus dem Chat vollständig.");}
+  const arr=Array.isArray(j)?j:[j];
+  const groups=arr.map(o=>{
+    if(!o||!o.source||!o.source.title||!Array.isArray(o.cards))throw new Error("Es fehlt „source.title“ oder die Liste „cards“.");
+    const title=String(o.source.title).trim();
+    const match=Object.values(S.sources).find(s=>s.title.toLowerCase()===title.toLowerCase());
+    const cards=o.cards.map(c=>{
+      const x={chapter:String(c.chapter||"").trim(),type:String(c.type||"qa").toLowerCase(),front:c.front||"",back:c.back||"",text:c.text||"",note:c.note||"",sel:true};
+      if(x.type==="frage")x.type="qa";
+      if(!TYPE_LABEL[x.type])x.err="Unbekannter Kartentyp „"+x.type+"“.";
+      else if(x.type==="cloze"&&!gapCount(x.text))x.err="Lückentext ohne {{Lücke}}.";
+      else if(x.type!=="cloze"&&(!x.front||!x.back))x.err="Vorderseite oder Rückseite fehlt.";
+      return x;
+    });
+    return {src:{title,author:o.source.author||"",kind:o.source.kind||"Buch",note:o.source.note||""},match:match?match.id:null,cards};
+  });
+  return groups;
+}
+function makeCard(src,ch,type,f){
+  const now=Date.now();
+  if(type==="cloze"){
+    const n=gapCount(f.text);const grp=n>1?uid():null;const ids=[];
+    for(let k=0;k<n;k++){const id=uid();S.cards[id]={id,src,ch,type,text:f.text,k,note:f.note||"",grp,created:now,ord:ORD++};ids.push(id);}
+    return ids.length;
+  }
+  const id=uid();S.cards[id]={id,src,ch,type,front:f.front,back:f.back,note:f.note||"",created:now,ord:ORD++};return 1;
+}
+let ORD=0;
+function doImport(){
+  let n=0,lastSrc=null;
+  IMP.groups.forEach(g=>{
+    const chosen=g.cards.filter(c=>c.sel&&!c.err);if(!chosen.length)return;
+    let id=g.match;
+    if(!id){id=uid();S.sources[id]={id,title:g.src.title,author:g.src.author,kind:g.src.kind,note:g.src.note,created:Date.now()};}
+    chosen.forEach(c=>{n+=makeCard(id,c.chapter,c.type,c);});
+    lastSrc=id;
+  });
+  IMP=null;save();toast(n+" Karten hinzugefügt");
+  VIEW="lib";SRC=lastSrc;render();window.scrollTo(0,0);
+}
+const DEMO={source:{title:"Beispiel: Wie Erinnern funktioniert",author:"Merk",kind:"Thema"},cards:[
+  {chapter:"Vergessen",type:"qa",front:"Was beschreibt die Vergessenskurve?",back:"Wie schnell die Wahrscheinlichkeit sinkt, sich an etwas zu erinnern, wenn man es nicht wiederholt. Am Anfang fällt sie steil, später flacher."},
+  {chapter:"Vergessen",type:"cloze",text:"Wiederholungen mit wachsendem Abstand nennt man {{verteiltes Lernen::Fachbegriff}}. Sie wirken besser als {{Pauken am Stück}}."},
+  {chapter:"Vergessen",type:"qa",front:"Wie modelliert FSRS die Erinnerungswahrscheinlichkeit $R$ nach $t$ Tagen?",back:"Als Potenzkurve: $$R(t,S)=\\left(1+F\\cdot\\frac{t}{S}\\right)^{-w}$$ $S$ ist die Stabilität: nach $S$ Tagen liegt $R$ bei 90 %."},
+  {chapter:"Abrufen",type:"explain",front:"Erkläre in eigenen Worten, warum Abfragen mehr bringt als nochmal Lesen.",back:"Beim Abrufen muss das Gehirn die Information selbst rekonstruieren. Diese Anstrengung stärkt die Erinnerungsspur. Nochmal Lesen fühlt sich vertraut an, trainiert aber das Erinnern kaum."},
+  {chapter:"Abrufen",type:"qa",front:"Warum sind Warum-Fragen oft bessere Karten als reine Fakten?",back:"Sie zwingen dich, Zusammenhänge herzustellen. Verknüpftes Wissen bleibt länger und lässt sich auf neue Situationen übertragen."}
+]};
+
+/* ---------- Einstellungen ---------- */
+function renderSettings(){
+  return `<button class="btn ghost" data-act="tab" data-v="today" style="padding-left:0;align-self:flex-start">← Heute</button>
+  <h1>Einstellungen</h1>
+  <section class="panel stack"><h3>Neue Karten pro Tag</h3><p class="small muted">Für Wissenskarten reichen 10. Wiederholungen kommen dazu.</p>
+    <div class="opts">${[5,10,15,20].map(n=>`<button data-act="npd" data-n="${n}" aria-pressed="${S.newPerDay===n}">${n}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Limit pro Kapitel</h3><p class="small muted">Ab dieser Zahl warnt der Import, dass ein Kapitel zu viele Karten bekommt.</p>
+    <div class="opts">${[5,10,15].map(n=>`<button data-act="chl" data-n="${n}" aria-pressed="${S.chLimit===n}">${n}</button>`).join("")}</div></section>
+  <section class="panel stack"><h3>Rückstand-Bremse</h3><p class="small muted">Sind mehr Wiederholungen überfällig als du neue Karten pro Tag lernst, gibt es nur noch halb so viele neue. Beim Doppelten gar keine, bis der Rückstand abgebaut ist. Die am meisten gefährdeten Karten kommen zuerst.</p>
+    <div class="opts"><button data-act="brake" data-v="1" aria-pressed="${S.brake!==false}">An</button><button data-act="brake" data-v="0" aria-pressed="${S.brake===false}">Aus</button></div></section>
+  <section class="panel stack"><h3>Backup</h3><p class="small muted">Kopiert die ganze Bibliothek samt Lernstand als Text. Zum Wiederherstellen hier einfügen.</p>
+    <button class="btn secondary" data-act="export">Backup kopieren</button>
+    <textarea id="bak" class="code" placeholder='{"v":1, …}'></textarea>
+    <button class="btn secondary" data-act="restore">Backup einlesen</button></section>
+  <section class="panel stack"><h3>Zurücksetzen</h3><p class="small muted">Löscht alle Quellen, Karten und Statistiken.</p>
+    <button class="btn secondary" data-act="reset1" style="color:var(--bad)">Alles löschen</button>
+    <div id="resetConfirm" hidden class="stack"><p class="small"><b>Wirklich alles löschen?</b> Das lässt sich nicht rückgängig machen.</p>
+    <div class="row"><button class="btn secondary" data-act="reset0">Abbrechen</button><button class="btn danger" data-act="reset2">Löschen</button></div></div></section>
+  <p class="syncnote">Planung mit FSRS-6, Ziel 90 % Behalten.</p>`;
+}
+
+/* ============================================================
+   SESSION
+   Fortschritt: Karte zählt als geschafft bei Schwer, Gut oder Einfach.
+   Nochmal bringt keinen Fortschritt. Der Nenner bleibt fix.
+   ============================================================ */
+const IDLE_CAP=2*MIN;
+function savedSess(){const v=S&&S.sess;if(!v||v.day!==dayKey())return null;if(!v.queue||!v.queue.some(id=>S.cards[id]))return null;return v;}
+function persistSess(){
+  if(!SESS)return;
+  if(!SESS.queue.length){S.sess=null;return;}
+  S.sess={day:SESS.day,filter:SESS.filter,queue:SESS.queue.slice(),total:SESS.total,done:[...SESS.done],seen:[...SESS.seen],again:SESS.again,answers:SESS.answers,okN:SESS.okN,activeMs:SESS.activeMs};
+}
+function tick(){if(!SESS)return;const now=Date.now();SESS.activeMs+=Math.min(IDLE_CAP,Math.max(0,now-(SESS.lastT||now)));SESS.lastT=now;}
+function startSession(filter){
+  const base={phase:"ask",input:"",paused:false,lastT:Date.now()};
+  const sv=savedSess();
+  if(sv&&filter===undefined){
+    SESS={...base,day:sv.day,filter:sv.filter,queue:sv.queue.filter(id=>S.cards[id]),total:sv.total,done:new Set(sv.done),seen:new Set(sv.seen),again:sv.again||{},answers:sv.answers||0,okN:sv.okN||0,activeMs:sv.activeMs||0};
+  }else{
+    const f=filter===undefined?FILTER:filter;
+    const q=buildQueue(f);if(!q.length){toast("Gerade nichts fällig");return;}
+    SESS={...base,day:dayKey(),filter:f,queue:q,total:q.length,done:new Set(),seen:new Set(),again:{},answers:0,okN:0,activeMs:0};
+    persistSess();save();
+  }
+  render();window.scrollTo(0,0);
+}
+function curCard(){return SESS&&S.cards[SESS.queue[0]];}
+function renderSession(){
+  const c=curCard();
+  if(!c||SESS.paused)return renderReport(!!c);
+  const pct=Math.min(100,SESS.done.size/Math.max(1,SESS.total)*100);
+  const x=st(c.id),isNew=!x||!x.state,shown=SESS.phase==="shown";
+  const s=S.sources[c.src];
+  let body="";
+  if(c.type==="cloze"){
+    body=`<div class="prompt">${clozeHTML(c.text,c.k,shown)}</div>`;
+    if(shown&&c.note)body+=`<p class="note">${fmt(c.note)}</p>`;
+  }else{
+    body=`<div class="prompt">${fmt(c.front)}</div>`;
+    if(c.type==="explain"&&!shown)body+=`<div class="field"><label class="label" for="yours">Deine Erklärung (optional)</label><textarea id="yours" placeholder="Erst selbst formulieren, dann vergleichen">${esc(SESS.input)}</textarea></div>`;
+    if(shown){
+      body+=`<div class="divider"></div>`;
+      if(c.type==="explain"&&SESS.input.trim())body+=`<div class="stack" style="gap:6px"><span class="label">Deine Worte</span><div class="yours">${esc(SESS.input)}</div></div><span class="label">Musterantwort</span>`;
+      body+=`<div class="answer">${fmt(c.back)}</div>`;
+      if(c.note)body+=`<p class="note">${fmt(c.note)}</p>`;
+    }
+  }
+  return `<main style="padding-bottom:24px">
+    <div class="sessbar"><button class="closebtn" data-act="quit" aria-label="Session pausieren"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="bar"><span style="width:${pct}%;background:var(--accent)"></span></div><span class="small mono muted">${SESS.done.size}/${SESS.total}</span></div>
+    <article class="card" aria-live="polite">
+      <div class="ctype"><span class="label">${TYPE_LABEL[c.type]}</span>${isNew?'<span class="chip on">neu</span>':""}</div>
+      ${body}
+      <p class="src-line">${esc(s?s.title:"")}${c.ch?" · "+esc(c.ch):""}</p>
+    </article>
+    ${shown?rateButtons(c):`<button class="btn" data-act="reveal">${c.type==="explain"?"Mit Musterantwort vergleichen":"Antwort zeigen"}</button>`}
+  </main>`;
+}
+function rateButtons(c){
+  const p=fsrsPreview(st(c.id),Date.now());
+  const names={1:"Nochmal",2:"Schwer",3:"Gut",4:"Einfach"};
+  return `<div class="stack" style="gap:8px"><div class="rates">${[1,2,3,4].map(g=>`<button data-act="rate" data-g="${g}">${names[g]}<small>${fmtIv(p[g].ms)}</small></button>`).join("")}</div>
+  <p class="small muted" style="text-align:center">Wie gut wusstest du es?</p></div>`;
+}
+function rate(g){
+  const c=curCard(),now=Date.now(),prev=st(c.id),wasNew=!prev||!prev.state;
+  const p=fsrsPreview(prev,now)[g];
+  const day=today();
+  S.st[c.id]={s:p.s,d:p.d,last:now,due:now+p.ms,reps:(prev?prev.reps:0)+1,lapses:(prev?prev.lapses:0)+(g===1&&!wasNew?1:0),state:g===1?1:2,intro:prev&&prev.intro?prev.intro:dayKey(now)};
+  S.log.push([now,c.id,g,Math.round(p.ms/DAY*10)/10]);if(S.log.length>8000)S.log=S.log.slice(-8000);
+  if(!SESS.seen.has(c.id)){SESS.seen.add(c.id);if(wasNew)day.nw++;else day.rev++;}
+  tick();SESS.answers++;
+  if(g>1){SESS.okN++;SESS.done.add(c.id);}else SESS.again[c.id]=(SESS.again[c.id]||0)+1;
+  SESS.queue.shift();
+  if(g===1)SESS.queue.splice(Math.min(3,SESS.queue.length),0,c.id);
+  SESS.phase="ask";SESS.input="";
+  if(!SESS.queue.length)day.done=true;
+  persistSess();save();render();window.scrollTo(0,0);
+}
+/** Bericht: beim Pausieren (X) und am Ende */
+function renderReport(paused){
+  const total=SESS.total,done=SESS.done.size;
+  const quote=SESS.answers?Math.round(SESS.okN/SESS.answers*100)+" %":"0 %";
+  const mins=SESS.activeMs<MIN?"<1":String(Math.round(SESS.activeMs/MIN));
+  const hard=Object.entries(SESS.again).filter(([id])=>S.cards[id]).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const head=paused
+    ?`<div class="label">Session pausiert</div><h1>${done} von ${total} geschafft</h1><p class="muted">Noch ${total-done} ${total-done===1?"Karte":"Karten"} offen. Dein Stand bleibt bis heute Abend gespeichert.</p>`
+    :`<div class="label">Session beendet</div><h1>Geschafft</h1><p class="muted">${total} von ${total} Karten · ${streak()} ${streak()===1?"Tag":"Tage"} in Folge.</p>`;
+  return `<main>
+  <div class="stack" style="gap:6px">${head}</div>
+  <div class="bar"><span style="width:${done/Math.max(1,total)*100}%;background:var(--accent)"></span></div>
+  <div class="stats3">
+    <div class="stat"><b class="mono">${done}</b><span class="small muted">geschafft</span></div>
+    <div class="stat"><b class="mono">${quote}</b><span class="small muted">gewusst</span></div>
+    <div class="stat"><b class="mono">${esc(mins)}</b><span class="small muted">Min gelernt</span></div>
+  </div>
+  ${hard.length?`<section class="panel stack"><h3>Schwierige Karten</h3><div class="list">${hard.map(([id,n])=>`<button class="cardrow" data-act="card" data-id="${id}"><span class="t">${esc(plain(S.cards[id]))}</span><span class="chip">${n}× nochmal</span></button>`).join("")}</div></section>`:""}
+  ${paused?`<button class="btn" data-act="resume">Weiterlernen</button><button class="btn secondary" data-act="later">Später fortsetzen</button>`
+    :`<button class="btn" data-act="endsess">Fertig</button>`}
+  </main>`;
+}
+
+/* ============================================================
+   SHEETS: Karte (Verlauf, Bearbeiten), Quelle, neue Karte
+   ============================================================ */
+function renderLayer(){
+  if(!SHEET){$layer.innerHTML="";return;}
+  let inner="";
+  if(SHEET.type==="card")inner=sheetCard();
+  else if(SHEET.type==="src")inner=sheetSrc();
+  else if(SHEET.type==="add")inner=sheetAdd();
+  $layer.innerHTML=`<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" data-stop="1"><span class="grab"></span>${inner}</div></div>`;
+}
+function sheetCard(){
+  const c=S.cards[SHEET.id];if(!c){SHEET=null;return "";}
+  if(SHEET.edit)return editForm(c);
+  const x=st(c.id),m=matOf(x);
+  const hist=S.log.filter(l=>l[1]===c.id);
+  const names={1:"Nochmal",2:"Schwer",3:"Gut",4:"Einfach"};
+  const mx=Math.max(1,...hist.map(h=>h[3]||0));
+  const col={1:"var(--r-again)",2:"var(--r-hard)",3:"var(--r-good)",4:"var(--r-easy)"};
+  const content=c.type==="cloze"?`<div class="prompt" style="font-size:19px">${clozeHTML(c.text,c.k,true)}</div>`
+    :`<div class="prompt" style="font-size:19px">${fmt(c.front)}</div><div class="divider"></div><div class="answer" style="font-size:17px">${fmt(c.back)}</div>`;
+  return `<div class="spread"><span class="label">${TYPE_LABEL[c.type]}${c.ch?" · "+esc(c.ch):""}</span><span class="chip">${MAT_LABEL[m]}</span></div>
+  ${content}${c.note?`<p class="note">${fmt(c.note)}</p>`:""}
+  <section class="stack" style="gap:8px"><h3>Verlauf</h3>
+  ${hist.length?`<div class="ivchart" role="img" aria-label="Intervall nach jeder Wiederholung">${hist.map(h=>`<span style="height:${Math.max(4,(h[3]||0)/mx*70)}px;background:${col[h[2]]}" title="${fmtIv((h[3]||0)*DAY||MIN)}"></span>`).join("")}</div>
+    <p class="small muted">Jeder Balken ist eine Wiederholung, die Höhe das Intervall danach.${x&&x.state?` Nächste Wiederholung in ${fmtIv(Math.max(0,x.due-Date.now()))}, Stabilität ${fmtIv(x.s*DAY)}.`:""}</p>
+    <div class="hist">${hist.slice().reverse().map(h=>{const d=new Date(h[0]);return `<div><span class="mono small muted">${pad(d.getDate())}.${pad(d.getMonth()+1)}.</span><b class="g${h[2]}">${names[h[2]]}</b><span class="mono small">${h[2]===1?"10 Min":fmtIv((h[3]||0)*DAY)}</span></div>`;}).join("")}</div>`
+   :`<p class="small muted">Noch nicht gelernt.</p>`}
+  </section>
+  <div class="row"><button class="btn secondary" data-act="editcard">Bearbeiten</button><button class="btn secondary" data-act="suspcard">${c.susp?"Wieder aktivieren":"Pausieren"}</button></div>
+  <button class="btn ghost" data-act="delcard1" style="color:var(--bad);align-self:center">Karte löschen</button>
+  <div id="delcard" hidden class="row"><button class="btn secondary" data-act="delcard0">Abbrechen</button><button class="btn danger" data-act="delcard2">Löschen</button></div>`;
+}
+function editForm(c){
+  if(c.type==="cloze")return `<h2>Lückentext bearbeiten</h2>
+    <div class="field"><label class="label" for="eText">Text mit {{Lücke}}</label><textarea id="eText">${esc(c.text)}</textarea></div>
+    <p class="small muted">Gilt für alle Lücken dieses Satzes. Die Anzahl der Lücken muss gleich bleiben.</p>
+    <div class="field"><label class="label" for="eNote">Notiz</label><input type="text" id="eNote" value="${esc(c.note)}"></div>
+    <div class="row"><button class="btn secondary" data-act="canceledit">Abbrechen</button><button class="btn" data-act="saveedit">Speichern</button></div>`;
+  return `<h2>Karte bearbeiten</h2>
+    <div class="field"><label class="label" for="eFront">Vorderseite</label><textarea id="eFront">${esc(c.front)}</textarea></div>
+    <div class="field"><label class="label" for="eBack">Rückseite</label><textarea id="eBack">${esc(c.back)}</textarea></div>
+    <div class="field"><label class="label" for="eCh">Kapitel</label><input type="text" id="eCh" value="${esc(c.ch)}"></div>
+    <div class="field"><label class="label" for="eNote">Notiz</label><input type="text" id="eNote" value="${esc(c.note)}"></div>
+    <div class="row"><button class="btn secondary" data-act="canceledit">Abbrechen</button><button class="btn" data-act="saveedit">Speichern</button></div>`;
+}
+function sheetSrc(){
+  const s=SHEET.id?S.sources[SHEET.id]:{title:"",author:"",kind:"Buch",note:""};
+  return `<h2>${SHEET.id?"Quelle bearbeiten":"Neue Quelle"}</h2>
+  <div class="field"><label class="label" for="sTitle">Titel</label><input type="text" id="sTitle" value="${esc(s.title)}"></div>
+  <div class="field"><label class="label" for="sAuthor">Autor</label><input type="text" id="sAuthor" value="${esc(s.author)}"></div>
+  <div class="field"><label class="label" for="sKind">Art</label><select id="sKind">${KINDS.map(k=>`<option ${s.kind===k?"selected":""}>${k}</option>`).join("")}</select></div>
+  <div class="field"><label class="label" for="sNote">Notiz (optional)</label><textarea id="sNote" style="min-height:70px">${esc(s.note||"")}</textarea></div>
+  <div class="row"><button class="btn secondary" data-act="closesheet">Abbrechen</button><button class="btn" data-act="savesrc">Speichern</button></div>`;
+}
+function sheetAdd(){
+  const t=SHEET.t||"qa";
+  const chs=[...new Set(cardsOf(SHEET.id).map(c=>c.ch).filter(Boolean))];
+  return `<h2>Karte hinzufügen</h2>
+  <div class="opts">${Object.entries(TYPE_LABEL).map(([k,l])=>`<button data-act="addtype" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>
+  ${t==="cloze"?`<div class="field"><label class="label" for="aText">Text mit {{Lücke}}</label><textarea id="aText" placeholder="Die Halbwertszeit von C-14 beträgt {{5730 Jahre}}."></textarea></div>`
+   :`<div class="field"><label class="label" for="aFront">${t==="explain"?"Aufgabe":"Frage"}</label><textarea id="aFront" style="min-height:80px" placeholder="${t==="explain"?"Erkläre in eigenen Worten, warum …":"Warum …?"}"></textarea></div>
+     <div class="field"><label class="label" for="aBack">${t==="explain"?"Musterantwort":"Antwort"}</label><textarea id="aBack" style="min-height:80px"></textarea></div>`}
+  <div class="field"><label class="label" for="aCh">Kapitel</label><input type="text" id="aCh" list="chlist" value="${esc(SHEET.ch||"")}"><datalist id="chlist">${chs.map(c=>`<option value="${esc(c)}">`).join("")}</datalist></div>
+  <p class="small muted">Formeln in $…$, fett mit **…**.</p>
+  <div class="row"><button class="btn secondary" data-act="closesheet">Abbrechen</button><button class="btn" data-act="saveadd">Hinzufügen</button></div>`;
+}
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-act]");if(!el)return;
+  const a=el.dataset.act;
+  if(a==="closesheet"){if(e.target.closest("[data-stop]")&&!e.target.closest('button[data-act="closesheet"]'))return;SHEET=null;renderLayer();return;}
+  if(a==="sel"||a==="selall"){
+    if(a==="sel"){IMP.groups[+el.dataset.g].cards[+el.dataset.c].sel=el.checked;}
+    else IMP.groups[+el.dataset.g].cards.forEach(c=>c.sel=el.dataset.v==="1");
+    const y=window.scrollY;render();window.scrollTo(0,y);return;
+  }
+  switch(a){
+    case "tab":VIEW=el.dataset.v;SRC=null;render();window.scrollTo(0,0);break;
+    case "filter":FILTER=el.dataset.id||null;render();break;
+    case "start":startSession();break;
+    case "startsrc":S.sess=null;startSession(el.dataset.id);break;
+    case "reveal":{const t=document.getElementById("yours");if(t)SESS.input=t.value;SESS.phase="shown";render();break;}
+    case "rate":rate(+el.dataset.g);break;
+    case "quit":tick();SESS.paused=true;persistSess();save();render();window.scrollTo(0,0);break;
+    case "resume":SESS.paused=false;SESS.lastT=Date.now();render();break;
+    case "later":persistSess();SESS=null;VIEW="today";save();render();window.scrollTo(0,0);break;
+    case "endsess":SESS=null;S.sess=null;VIEW="today";save();render();window.scrollTo(0,0);break;
+    case "opensrc":SRC=el.dataset.id;render();window.scrollTo(0,0);break;
+    case "libback":SRC=null;render();break;
+    case "card":SHEET={type:"card",id:el.dataset.id};renderLayer();break;
+    case "editcard":SHEET.edit=true;renderLayer();break;
+    case "canceledit":SHEET.edit=false;renderLayer();break;
+    case "saveedit":{
+      const c=S.cards[SHEET.id];
+      if(c.type==="cloze"){
+        const t=val("eText");
+        if(gapCount(t)!==gapCount(c.text)){toast("Die Anzahl der Lücken muss gleich bleiben.");break;}
+        Object.values(S.cards).filter(x=>x.id===c.id||(c.grp&&x.grp===c.grp)).forEach(x=>{x.text=t;x.note=val("eNote");});
+      }else{
+        if(!val("eFront")||!val("eBack")){toast("Vorder- und Rückseite brauchen Text.");break;}
+        c.front=val("eFront");c.back=val("eBack");c.ch=val("eCh");c.note=val("eNote");
+      }
+      save();SHEET.edit=false;render();break;}
+    case "suspcard":{const c=S.cards[SHEET.id];c.susp=!c.susp;save();render();break;}
+    case "delcard1":document.getElementById("delcard").hidden=false;el.hidden=true;break;
+    case "delcard0":SHEET.edit=false;renderLayer();break;
+    case "delcard2":{const id=SHEET.id;delete S.cards[id];delete S.st[id];S.log=S.log.filter(l=>l[1]!==id);SHEET=null;save();render();toast("Karte gelöscht");break;}
+    case "newsrc":SHEET={type:"src",id:null};renderLayer();break;
+    case "editsrc":SHEET={type:"src",id:el.dataset.id};renderLayer();break;
+    case "savesrc":{
+      const t=val("sTitle");if(!t){toast("Die Quelle braucht einen Titel.");break;}
+      let id=SHEET.id;
+      if(!id){id=uid();S.sources[id]={id,created:Date.now()};}
+      Object.assign(S.sources[id],{title:t,author:val("sAuthor"),kind:val("sKind"),note:val("sNote")});
+      SHEET=null;save();VIEW="lib";SRC=id;render();break;}
+    case "delsrc1":document.getElementById("delsrc").hidden=false;break;
+    case "delsrc0":document.getElementById("delsrc").hidden=true;break;
+    case "delsrc2":{const id=el.dataset.id;cardsOf(id).forEach(c=>{delete S.cards[c.id];delete S.st[c.id];});
+      const ids=new Set(Object.keys(S.cards));S.log=S.log.filter(l=>ids.has(l[1]));delete S.sources[id];
+      if(FILTER===id)FILTER=null;S.sess=null;SRC=null;save();render();toast("Quelle gelöscht");break;}
+    case "addcard":SHEET={type:"add",id:el.dataset.id,t:"qa"};renderLayer();break;
+    case "addtype":SHEET.ch=val("aCh");SHEET.t=el.dataset.t;renderLayer();break;
+    case "saveadd":{
+      const t=SHEET.t||"qa",ch=val("aCh");
+      if(t==="cloze"){const tx=val("aText");if(!gapCount(tx)){toast("Markiere mindestens eine Lücke mit {{…}}.");break;}makeCard(SHEET.id,ch,t,{text:tx});}
+      else{if(!val("aFront")||!val("aBack")){toast("Beide Felder brauchen Text.");break;}makeCard(SHEET.id,ch,t,{front:val("aFront"),back:val("aBack")});}
+      save();SHEET={type:"add",id:SHEET.id,t,ch};render();toast("Karte hinzugefügt");break;}
+    // Import
+    case "parse":{const text=document.getElementById("impText").value;
+      try{IMP={text,groups:parseImport(text)};}catch(err){IMP={text,err:err.message};}
+      render();window.scrollTo(0,0);break;}
+    case "impback":IMP={text:IMP.text};render();break;
+    case "doimport":doImport();break;
+    case "copyprompt":copyText(PROMPT,"Anleitung kopiert");break;
+    case "demo":IMP={text:JSON.stringify(DEMO,null,1),groups:parseImport(JSON.stringify(DEMO))};VIEW="imp";render();window.scrollTo(0,0);break;
+    // Einstellungen
+    case "brake":S.brake=el.dataset.v==="1";save();render();break;
+    case "npd":S.newPerDay=+el.dataset.n;save();render();break;
+    case "chl":S.chLimit=+el.dataset.n;save();render();break;
+    case "export":copyText(JSON.stringify(S),"Backup in die Zwischenablage kopiert",true);break;
+    case "restore":{try{const r=JSON.parse(val("bak"));if(!r||r.v!==1||!r.cards||!r.sources)throw 0;S=Object.assign(fresh(),r);save();toast("Backup eingelesen");VIEW="today";render();}
+      catch(err){toast("Das ist kein gültiges Merk-Backup.");}break;}
+    case "reset1":document.getElementById("resetConfirm").hidden=false;break;
+    case "reset0":document.getElementById("resetConfirm").hidden=true;break;
+    case "reset2":S=fresh();SESS=null;FILTER=null;save();VIEW="today";render();break;
+  }
+});
+async function copyText(t,msg,fill){
+  try{await navigator.clipboard.writeText(t);toast(msg);}
+  catch(e){const b=document.getElementById(fill?"bak":"impText");if(b){b.value=t;b.select();}toast("Kopieren ging nicht. Der Text steht im Feld, markiere ihn dort.");}
+}
+document.addEventListener("input",e=>{if(e.target.id==="yours"&&SESS)SESS.input=e.target.value;});
+document.addEventListener("keydown",e=>{
+  if(SHEET&&e.key==="Escape"){SHEET=null;renderLayer();return;}
+  if(!SESS||SESS.paused||!curCard()||SHEET)return;
+  const typing=e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT";
+  if(SESS.phase==="shown"&&!typing&&["1","2","3","4"].includes(e.key))rate(+e.key);
+  else if(SESS.phase==="ask"&&!typing&&(e.key===" "||e.key==="Enter")){e.preventDefault();SESS.phase="shown";render();}
+  else if(SESS.phase==="ask"&&typing&&e.key==="Enter"&&(e.metaKey||e.ctrlKey)){SESS.input=e.target.value;SESS.phase="shown";render();}
+});
+
+/* KaTeX lädt nach; danach neu zeichnen, damit Formeln erscheinen */
+(function(){const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js";s.onload=()=>{if(SESS||!SHEET)render();else renderLayer();};document.head.appendChild(s);})();
+initStore();
+ORD=Object.keys(S.cards).length;
+if("serviceWorker" in navigator&&location.protocol==="https:"){
+  window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});
+}
+</script>
+</body>
+</html>

@@ -12,6 +12,7 @@ Produktkonzept mit Lernlogik, Entscheidungen und Roadmap: https://claude.ai/code
 - `sw.js`: Service Worker (Offline)
 - `tools/validate.py`: Prüfskript für alle polnischen Formen. Bericht in `tools/pruefbericht.md`, Ausnahmen mit Begründung in `tools/geprueft.tsv`
 - README.md beschreibt Aufbau, Speicherformat und Prüfung ausführlicher
+- `merk/`: eigene zweite App **Merk** (Wissensbibliothek für Bücher, Karten per JSON-Import aus dem Chat), erreichbar unter …/polish-guide/merk/. Eigenständig: eigene `index.html`, `sw.js` (VERSION `merk-vN`, nur bei Änderungen in `merk/` hochzählen), Manifest und Icons. Lernstand im localStorage unter `merk-state-v1`. Kroks `sw.js` ignoriert alles unter `/merk/`, beide löschen nur Caches mit eigenem Präfix.
 
 ## Pflicht bei jeder Änderung
 1. **`VERSION` in `sw.js` hochzählen** (`krok-vN` → `krok-vN+1`). Sonst zeigt die installierte App weiter die alte Fassung.

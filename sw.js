@@ -1,6 +1,6 @@
 // Krok Service Worker: App offline verfügbar machen.
 // Bei jeder Änderung an index.html o. Ä. VERSION hochzählen, damit Geräte die neue Fassung laden.
-const VERSION = "krok-v17";
+const VERSION = "krok-v18";
 const SHELL = [
   "./",
   "./index.html",
@@ -20,7 +20,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== "krok-fonts").map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("krok-") && k !== VERSION && k !== "krok-fonts").map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -45,6 +45,8 @@ self.addEventListener("fetch", (e) => {
   }
 
   if (url.origin !== location.origin) return;
+  // Merk liegt im Unterordner /merk/ und hat einen eigenen Service Worker
+  if (url.pathname.includes("/merk/")) return;
 
   // Seite selbst: erst Netz (frische Version), offline aus dem Cache
   if (req.mode === "navigate") {

@@ -57,3 +57,7 @@ Jeder Push auf `main` geht automatisch live (GitHub Pages, „Deploy from a bran
 - Kapitel 2–10 nach dem Muster von Küche füllen
 - Tatoeba-Sätze für Lückenaufgaben importieren
 - Sync zwischen Geräten (z. B. über ein privates GitHub-Gist oder Supabase)
+
+## Merk
+
+Im Ordner `merk/` liegt eine zweite, unabhängige App: **Merk**, eine Wissensbibliothek für Bücher und Themen mit FSRS-6. Karten kommen als JSON aus dem Chat und werden in der App unter Import eingefügt. Erreichbar unter https://remigiuszkwapik-web.github.io/polish-guide/merk/
